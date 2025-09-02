@@ -29,7 +29,7 @@ function App() {
   return (
     <div className="app-container">
       <div className="main-card">
-        <h1 className="title">Did You Code Today?</h1>
+        <h1 className="title">Commit Tracker</h1>
         <p className="subtitle">
           Track your daily coding activity on GitHub
         </p>

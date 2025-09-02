@@ -49,7 +49,7 @@ export const useCommitData = () => {
 
   const checkCommits = useCallback(async (username) => {
     if (!username) {
-      setStatus('⚠️ Please enter a GitHub username.');
+      setStatus('Please enter a GitHub username.');
       return;
     }
 
@@ -72,13 +72,13 @@ export const useCommitData = () => {
       
       if (!reposResponse.ok) {
         if (reposResponse.status === 403) {
-          setStatus('⚠️ GitHub API rate limit exceeded (60 requests/hour). Please try again later or login with GitHub for higher limits.');
+          setStatus('GitHub API rate limit exceeded (60 requests/hour). Please try again later or login with GitHub for higher limits.');
           isLoadingRef.current = false;
           setLoading(false);
           return;
         }
         if (reposResponse.status === 404) {
-          setStatus('❌ User not found. Please check the username.');
+          setStatus('User not found. Please check the username.');
           isLoadingRef.current = false;
           setLoading(false);
           return;
@@ -89,7 +89,7 @@ export const useCommitData = () => {
       const repos = await reposResponse.json();
       
       if (!Array.isArray(repos) || repos.length === 0) {
-        setStatus('❌ No repositories found for this user.');
+        setStatus('No repositories found for this user.');
         isLoadingRef.current = false;
         setLoading(false);
         return;
@@ -108,7 +108,7 @@ export const useCommitData = () => {
           
           if (commitsResponse.status === 403) {
             // Hit rate limit, stop checking more repos
-            setStatus('⚠️ GitHub API rate limit reached. Showing partial results. Please login for full access.');
+            setStatus('GitHub API rate limit reached. Showing partial results. Please login for full access.');
             break;
           }
           
@@ -188,25 +188,25 @@ export const useCommitData = () => {
 
       if (totalTodayCommits > 0) {
         const repoText = reposWithCommitsToday === 1 ? 'repository' : 'repositories';
-        setStatus(`✅ You coded today! ${totalTodayCommits} commit${totalTodayCommits > 1 ? 's' : ''} across ${reposWithCommitsToday} ${repoText} 🚀`);
+        setStatus(`You coded today! ${totalTodayCommits} commit${totalTodayCommits > 1 ? 's' : ''} across ${reposWithCommitsToday} ${repoText}`);
       } else if (mostRecentCommit) {
         const timeSinceLastCommit = mostRecentCommit.isToday ? 'today' : 'recently';
-        setStatus(`❌ No commits today, but you committed ${timeSinceLastCommit}. Keep coding! 💻`);
+        setStatus(`No commits today, but you committed ${timeSinceLastCommit}. Keep coding!`);
       } else {
-        setStatus('❌ No recent commit activity found. Time to start coding! 💻');
+        setStatus('No recent commit activity found. Time to start coding!');
       }
       
     } catch (error) {
       console.error('API Error:', error);
       
       if (error.message.includes('403')) {
-        setStatus('⚠️ GitHub API rate limit exceeded. Please login with GitHub or try again later.');
+        setStatus('GitHub API rate limit exceeded. Please login with GitHub or try again later.');
       } else if (error.message.includes('404')) {
-        setStatus('❌ User not found. Please check the username.');
+        setStatus('User not found. Please check the username.');
       } else if (error.message.includes('Failed to fetch')) {
-        setStatus('❌ Network error. Please check your internet connection.');
+        setStatus('Network error. Please check your internet connection.');
       } else {
-        setStatus(`❌ Error: ${error.message}`);
+        setStatus(`Error: ${error.message}`);
       }
     }
 
