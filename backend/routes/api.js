@@ -2,6 +2,34 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 
+router.get('/user', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: req.user.githubId,
+        username: req.user.username,
+        displayName: req.user.displayName,
+        avatarUrl: req.user.avatarUrl,
+        profileUrl: req.user.profileUrl
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching user data',
+      error: error.message
+    });
+  }
+});
+
 router.get('/users', async (req, res) => {
   try {
     const users = await User.find().select('-__v');
