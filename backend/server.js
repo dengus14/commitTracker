@@ -2,10 +2,16 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 require('dotenv').config();
+
+const connectDB = require('./config/database');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+connectDB();
 
 app.use(helmet());
 app.use(morgan('combined'));
@@ -17,6 +23,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/api', apiRoutes);
+
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Commit Tracker API is running!',
@@ -26,8 +34,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.json({ 
     status: 'healthy',
+    database: dbStatus,
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
