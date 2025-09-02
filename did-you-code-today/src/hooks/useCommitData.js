@@ -1,9 +1,43 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export const useCommitData = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [commitStats, setCommitStats] = useState(null);
+  const isLoadingRef = useRef(false);
+
+  const fetchGitHub = async (path) => {
+    if (user && user.hasToken) {
+      const response = await fetch(`http://localhost:5001/api/github/${path}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        return { 
+          ok: true, 
+          json: async () => result.data, 
+          status: response.status 
+        };
+      } else {
+        const errorResult = await response.json();
+        return { 
+          ok: false, 
+          status: response.status, 
+          json: async () => errorResult 
+        };
+      }
+    } else {
+      const response = await fetch(`https://api.github.com/${path}`);
+      return { 
+        ok: response.ok, 
+        json: () => response.json(), 
+        status: response.status 
+      };
+    }
+  };
 
   const getStatusClass = () => {
     if (loading) return 'loading';
@@ -19,6 +53,11 @@ export const useCommitData = () => {
       return;
     }
 
+    if (isLoadingRef.current) {
+      return; // Prevent multiple simultaneous requests
+    }
+
+    isLoadingRef.current = true;
     setLoading(true);
     setStatus('');
     setCommitStats(null);
@@ -26,18 +65,32 @@ export const useCommitData = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      const reposResponse = await fetch(
-        `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`
-      );
+      console.log('Fetching repos for user:', username, user?.hasToken ? '(authenticated)' : '(unauthenticated)');
+      const reposResponse = await fetchGitHub(`users/${username}/repos?sort=updated&per_page=10`);
+      
+      console.log('Repos response status:', reposResponse.status);
       
       if (!reposResponse.ok) {
-        throw new Error(`User repos API error: ${reposResponse.status}`);
+        if (reposResponse.status === 403) {
+          setStatus('⚠️ GitHub API rate limit exceeded (60 requests/hour). Please try again later or login with GitHub for higher limits.');
+          isLoadingRef.current = false;
+          setLoading(false);
+          return;
+        }
+        if (reposResponse.status === 404) {
+          setStatus('❌ User not found. Please check the username.');
+          isLoadingRef.current = false;
+          setLoading(false);
+          return;
+        }
+        throw new Error(`GitHub API error: ${reposResponse.status}`);
       }
       
       const repos = await reposResponse.json();
       
       if (!Array.isArray(repos) || repos.length === 0) {
         setStatus('❌ No repositories found for this user.');
+        isLoadingRef.current = false;
         setLoading(false);
         return;
       }
@@ -47,11 +100,17 @@ export const useCommitData = () => {
       let allCommitsToday = [];
       let mostRecentCommit = null;
 
-      for (const repo of repos.slice(0, 5)) {
+      for (const repo of repos.slice(0, 3)) { // Reduced from 5 to 3 to avoid rate limits
         try {
-          const commitsResponse = await fetch(
-            `https://api.github.com/repos/${repo.full_name}/commits?author=${username}&since=${today}T00:00:00Z&until=${today}T23:59:59Z`
+          const commitsResponse = await fetchGitHub(
+            `repos/${repo.full_name}/commits?author=${username}&since=${today}T00:00:00Z&until=${today}T23:59:59Z`
           );
+          
+          if (commitsResponse.status === 403) {
+            // Hit rate limit, stop checking more repos
+            setStatus('⚠️ GitHub API rate limit reached. Showing partial results. Please login for full access.');
+            break;
+          }
           
           if (commitsResponse.ok) {
             const commits = await commitsResponse.json();
@@ -75,8 +134,8 @@ export const useCommitData = () => {
       }
 
       try {
-        const recentCommitsResponse = await fetch(
-          `https://api.github.com/repos/${repos[0].full_name}/commits?author=${username}&per_page=1`
+        const recentCommitsResponse = await fetchGitHub(
+          `repos/${repos[0].full_name}/commits?author=${username}&per_page=1`
         );
         
         if (recentCommitsResponse.ok) {
@@ -99,8 +158,8 @@ export const useCommitData = () => {
 
       let eventsData = { totalEvents: 0, pushEvents: 0 };
       try {
-        const eventsResponse = await fetch(
-          `https://api.github.com/users/${username}/events/public`
+        const eventsResponse = await fetchGitHub(
+          `users/${username}/events/public`
         );
         
         if (eventsResponse.ok) {
@@ -118,12 +177,12 @@ export const useCommitData = () => {
         todayCount: totalTodayCommits,
         todayRepos: reposWithCommitsToday,
         totalRecentEvents: eventsData.pushEvents,
-        totalRepos: Math.min(repos.length, 5),
+        totalRepos: Math.min(repos.length, 3), 
         lastCommit: mostRecentCommit,
         apiInfo: {
           totalEvents: eventsData.totalEvents,
           pushEvents: eventsData.pushEvents,
-          reposChecked: Math.min(repos.length, 5)
+          reposChecked: Math.min(repos.length, 3) 
         }
       });
 
@@ -139,9 +198,19 @@ export const useCommitData = () => {
       
     } catch (error) {
       console.error('API Error:', error);
-      setStatus(`❌ Error fetching data: ${error.message}`);
+      
+      if (error.message.includes('403')) {
+        setStatus('⚠️ GitHub API rate limit exceeded. Please login with GitHub or try again later.');
+      } else if (error.message.includes('404')) {
+        setStatus('❌ User not found. Please check the username.');
+      } else if (error.message.includes('Failed to fetch')) {
+        setStatus('❌ Network error. Please check your internet connection.');
+      } else {
+        setStatus(`❌ Error: ${error.message}`);
+      }
     }
 
+    isLoadingRef.current = false;
     setLoading(false);
   }, []);
 
