@@ -5,6 +5,7 @@ function App() {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [commitStats, setCommitStats] = useState(null);
 
   const getStatusClass = () => {
     if (loading) return "loading";
@@ -22,6 +23,7 @@ function App() {
 
     setLoading(true);
     setStatus("");
+    setCommitStats(null);
 
     try {
       const response = await fetch(
@@ -36,14 +38,41 @@ function App() {
       }
 
       const today = new Date().toISOString().split("T")[0];
-      const hasCommitToday = events.some(
-        (event) =>
-          event.type === "PushEvent" &&
-          event.created_at.startsWith(today)
+      const pushEvents = events.filter(event => event.type === "PushEvent");
+      
+      // Get today's commits
+      const todayCommits = pushEvents.filter(event => 
+        event.created_at.startsWith(today)
       );
+      
+      // Get total commits count for today
+      const todayCommitCount = todayCommits.reduce((total, event) => 
+        total + (event.payload.commits ? event.payload.commits.length : 0), 0
+      );
+      
+      // Get most recent commit
+      const mostRecentPush = pushEvents[0];
+      let lastCommitInfo = null;
+      
+      if (mostRecentPush) {
+        const lastCommitTime = new Date(mostRecentPush.created_at);
+        const repoName = mostRecentPush.repo.name.split('/')[1];
+        lastCommitInfo = {
+          time: lastCommitTime.toLocaleDateString() + ' at ' + lastCommitTime.toLocaleTimeString(),
+          repo: repoName,
+          commitCount: mostRecentPush.payload.commits ? mostRecentPush.payload.commits.length : 1
+        };
+      }
 
-      if (hasCommitToday) {
-        setStatus("✅ You coded today! Great job 🚀");
+      // Set commit statistics
+      setCommitStats({
+        todayCount: todayCommitCount,
+        totalRecentEvents: pushEvents.length,
+        lastCommit: lastCommitInfo
+      });
+
+      if (todayCommitCount > 0) {
+        setStatus(`✅ You coded today! ${todayCommitCount} commit${todayCommitCount > 1 ? 's' : ''} made 🚀`);
       } else {
         setStatus("❌ No commits yet today. Time to code! 💻");
       }
@@ -91,6 +120,35 @@ function App() {
         {(status || loading) && (
           <div className={`status-container ${getStatusClass()}`}>
             {loading ? "🔍 Checking your GitHub activity..." : status}
+          </div>
+        )}
+        
+        {commitStats && !loading && (
+          <div className="stats-container">
+            <h3 className="stats-title">📊 Activity Summary</h3>
+            
+            <div className="stats-grid">
+              <div className="stat-item">
+                <div className="stat-number">{commitStats.todayCount}</div>
+                <div className="stat-label">Commits Today</div>
+              </div>
+              
+              <div className="stat-item">
+                <div className="stat-number">{commitStats.totalRecentEvents}</div>
+                <div className="stat-label">Recent Push Events</div>
+              </div>
+            </div>
+            
+            {commitStats.lastCommit && (
+              <div className="last-commit-info">
+                <h4 className="last-commit-title">🕒 Last Activity</h4>
+                <p className="last-commit-details">
+                  <strong>{commitStats.lastCommit.repo}</strong><br/>
+                  {commitStats.lastCommit.commitCount} commit{commitStats.lastCommit.commitCount > 1 ? 's' : ''}<br/>
+                  <span className="commit-time">{commitStats.lastCommit.time}</span>
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
