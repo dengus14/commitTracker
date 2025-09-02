@@ -375,10 +375,26 @@ code {
 }
 
 .dashboard-title {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  margin-bottom: 2rem;
   color: #e6edf3;
-  font-weight: 500;
+  font-weight: 400;
+  position: relative;
+  padding-bottom: 1rem;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.dashboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 1px;
+  background: #30363d;
 }
 
 .dashboard-title strong {
@@ -419,7 +435,6 @@ code {
   transform: none;
 }
 
-/* Auth Loading Styles */
 .auth-loading {
   text-align: center;
   padding: 2rem;

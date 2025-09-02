@@ -16,22 +16,26 @@ const Dashboard = () => {
     }
   }, [user, checkCommits]);
 
+  // Custom message based on commit count
+  const getCustomMessage = () => {
+    if (loading) return "Checking your activity...";
+    
+    if (commitStats && commitStats.todayCount > 0) {
+      return `Hey, you have made ${commitStats.todayCount} commit${commitStats.todayCount > 1 ? 's' : ''} today, keep it going`;
+    } else if (commitStats) {
+      return "Looks like someone is taking a break, huh?";
+    }
+    return "";
+  };
+
   return (
     <div className="dashboard">
       <UserProfile />
       
       <div className="dashboard-content">
         <h2 className="dashboard-title">
-          Did <strong>YOU</strong> code today, {user?.displayName || user?.username}?
+          {getCustomMessage()}
         </h2>
-        
-        {loading && (
-          <div className="loading-message">
-            🔍 Checking your GitHub activity...
-          </div>
-        )}
-        
-        <StatusMessage status={status} loading={loading} />
         
         <CommitStats commitStats={commitStats} loading={loading} />
         
@@ -41,7 +45,7 @@ const Dashboard = () => {
             className="refresh-button"
             disabled={loading}
           >
-            🔄 Refresh Activity
+            Refresh Activity
           </button>
         )}
       </div>
