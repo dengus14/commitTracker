@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
   profileUrl: {
     type: String
   },
+  accessToken: {
+    type: String,
+    required: false
+  },
   lastLogin: {
     type: Date,
     default: Date.now

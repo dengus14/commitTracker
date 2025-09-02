@@ -12,7 +12,9 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
       let user = await User.findOne({ githubId: profile.id });
       
       if (user) {
+        user.accessToken = accessToken;
         await user.updateLastLogin();
+        await user.save();
         return done(null, user);
       }
       
@@ -22,7 +24,8 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         displayName: profile.displayName || profile.username,
         email: profile.emails && profile.emails[0] ? profile.emails[0].value : null,
         avatarUrl: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-        profileUrl: profile.profileUrl
+        profileUrl: profile.profileUrl,
+        accessToken: accessToken
       });
       
       await user.save();
