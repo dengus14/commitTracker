@@ -11,9 +11,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0d1117;
   min-height: 100vh;
-  color: #333;
+  color: #e6edf3;
 }
 
 code {
@@ -31,10 +31,11 @@ code {
 }
 
 .main-card {
-  background: white;
-  border-radius: 20px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 0;
   padding: 3rem 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   max-width: 500px;
   width: 100%;
   text-align: center;
@@ -51,7 +52,7 @@ code {
 }
 
 .subtitle {
-  color: #666;
+  color: #8b949e;
   margin-bottom: 2rem;
   font-size: 1.1rem;
 }
@@ -59,24 +60,24 @@ code {
 .auth-section {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #f8f9ff;
-  border-radius: 12px;
-  border: 2px dashed #667eea;
+  background: #161b22;
+  border-radius: 0;
+  border: 1px solid #30363d;
   text-align: center;
 }
 
 .auth-text {
   margin: 0 0 1rem 0;
-  color: #555;
+  color: #8b949e;
   font-size: 1rem;
 }
 
 .github-login-button {
-  background: #24292e;
+  background: #238636;
   color: white;
-  border: none;
+  border: 1px solid #30363d;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -85,15 +86,16 @@ code {
 }
 
 .github-login-button:hover {
-  background: #1a1e22;
-  transform: translateY(-1px);
+  background: #2ea043;
+  border-color: #30363d;
+  transform: none;
 }
 
 .divider {
   position: relative;
   text-align: center;
   margin: 2rem 0;
-  color: #999;
+  color: #656d76;
   font-size: 0.9rem;
 }
 
@@ -104,12 +106,12 @@ code {
   left: 0;
   right: 0;
   height: 1px;
-  background: #ddd;
+  background: #30363d;
   z-index: 1;
 }
 
 .divider span {
-  background: white;
+  background: #21262d;
   padding: 0 1rem;
   position: relative;
   z-index: 2;
@@ -122,32 +124,35 @@ code {
 .username-input {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #e6edf3;
+  border-radius: 0;
   font-size: 1rem;
   transition: border-color 0.3s ease;
   outline: none;
 }
 
 .username-input:focus {
-  border-color: #667eea;
+  border-color: #1f6feb;
+  background: #161b22;
 }
 
 .check-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1f6feb;
   color: white;
-  border: none;
+  border: 1px solid #30363d;
   padding: 1rem 2rem;
-  border-radius: 12px;
+  border-radius: 0;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: background 0.2s ease;
   width: 100%;
 }
 
 .check-button:hover {
-  transform: translateY(-2px);
+  background: #388bfd;
 }
 
 .check-button:disabled {
@@ -193,14 +198,14 @@ code {
 .stats-container {
   margin-top: 2rem;
   padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
+  background: #161b22;
+  border-radius: 0;
+  border: 1px solid #30363d;
 }
 
 .stats-title {
   margin: 0 0 1rem 0;
-  color: #495057;
+  color: #e6edf3;
   font-size: 1.1rem;
   text-align: center;
 }
@@ -215,34 +220,34 @@ code {
 .stat-item {
   text-align: center;
   padding: 1rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #21262d;
+  border-radius: 0;
+  border: 1px solid #30363d;
 }
 
 .stat-number {
   font-size: 2rem;
   font-weight: bold;
-  color: #667eea;
+  color: #1f6feb;
   margin-bottom: 0.5rem;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: #8b949e;
   font-weight: 500;
 }
 
 .last-commit-info {
-  background: white;
+  background: #21262d;
   padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+  border: 1px solid #30363d;
 }
 
 .last-commit-title {
   margin: 0 0 0.75rem 0;
-  color: #495057;
+  color: #e6edf3;
   font-size: 1rem;
 }
 
@@ -250,24 +255,24 @@ code {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #495057;
+  color: #e6edf3;
 }
 
 .commit-time {
-  color: #6c757d;
+  color: #8b949e;
   font-size: 0.85rem;
 }
 
 .api-info {
   margin-top: 1rem;
   padding: 0.75rem;
-  background: #e3f2fd;
-  border-radius: 6px;
-  border-left: 4px solid #2196f3;
+  background: #161b22;
+  border-radius: 0;
+  border-left: 4px solid #1f6feb;
 }
 
 .api-disclaimer {
-  color: #1565c0;
+  color: #1f6feb;
   font-size: 0.8rem;
   line-height: 1.4;
   display: block;
@@ -278,9 +283,9 @@ code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -294,8 +299,8 @@ code {
 .user-avatar {
   width: 50px;
   height: 50px;
-  border-radius: 50%;
-  border: 2px solid #667eea;
+  border-radius: 0;
+  border: 1px solid #30363d;
   object-fit: cover;
 }
 
@@ -307,30 +312,29 @@ code {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 0.25rem 0;
-  color: #333;
+  color: #e6edf3;
 }
 
 .user-username {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: #8b949e;
   margin: 0;
 }
 
 .logout-button {
-  background: #dc3545;
+  background: #da3633;
   color: white;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid #30363d;
+  border-radius: 0;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .logout-button:hover {
-  background: #c82333;
-  transform: translateY(-1px);
+  background: #f85149;
 }
 
 /* Dashboard Styles */
@@ -345,40 +349,40 @@ code {
 .dashboard-title {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: #e6edf3;
   font-weight: 500;
 }
 
 .dashboard-title strong {
-  color: #667eea;
+  color: #1f6feb;
   font-weight: 700;
 }
 
 .loading-message {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: #161b22;
+  color: #1f6feb;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 0;
+  border: 1px solid #30363d;
   margin: 1rem 0;
   font-weight: 500;
 }
 
 .refresh-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1f6feb;
   color: white;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid #30363d;
+  border-radius: 0;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease;
   margin-top: 1rem;
 }
 
 .refresh-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #388bfd;
 }
 
 .refresh-button:disabled {
