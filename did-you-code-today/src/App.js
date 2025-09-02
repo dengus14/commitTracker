@@ -26,58 +26,122 @@ function App() {
     setCommitStats(null);
 
     try {
-      const response = await fetch(
-        `https://api.github.com/users/${username}/events/public`
+      const today = new Date().toISOString().split("T")[0];
+      
+      const reposResponse = await fetch(
+        `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`
       );
-      const events = await response.json();
-
-      if (!Array.isArray(events)) {
-        setStatus("❌ Could not fetch events. Try again later.");
+      
+      if (!reposResponse.ok) {
+        throw new Error(`User repos API error: ${reposResponse.status}`);
+      }
+      
+      const repos = await reposResponse.json();
+      
+      if (!Array.isArray(repos) || repos.length === 0) {
+        setStatus("❌ No repositories found for this user.");
         setLoading(false);
         return;
       }
 
-      const today = new Date().toISOString().split("T")[0];
-      const pushEvents = events.filter(event => event.type === "PushEvent");
-      
-      // Get today's commits
-      const todayCommits = pushEvents.filter(event => 
-        event.created_at.startsWith(today)
-      );
-      
-      // Get total commits count for today
-      const todayCommitCount = todayCommits.reduce((total, event) => 
-        total + (event.payload.commits ? event.payload.commits.length : 0), 0
-      );
-      
-      // Get most recent commit
-      const mostRecentPush = pushEvents[0];
-      let lastCommitInfo = null;
-      
-      if (mostRecentPush) {
-        const lastCommitTime = new Date(mostRecentPush.created_at);
-        const repoName = mostRecentPush.repo.name.split('/')[1];
-        lastCommitInfo = {
-          time: lastCommitTime.toLocaleDateString() + ' at ' + lastCommitTime.toLocaleTimeString(),
-          repo: repoName,
-          commitCount: mostRecentPush.payload.commits ? mostRecentPush.payload.commits.length : 1
-        };
+      let totalTodayCommits = 0;
+      let reposWithCommitsToday = 0;
+      let allCommitsToday = [];
+      let mostRecentCommit = null;
+
+      for (const repo of repos.slice(0, 5)) {
+        try {
+          const commitsResponse = await fetch(
+            `https://api.github.com/repos/${repo.full_name}/commits?author=${username}&since=${today}T00:00:00Z&until=${today}T23:59:59Z`
+          );
+          
+          if (commitsResponse.ok) {
+            const commits = await commitsResponse.json();
+            
+            if (commits.length > 0) {
+              totalTodayCommits += commits.length;
+              reposWithCommitsToday++;
+              
+              commits.forEach(commit => {
+                allCommitsToday.push({
+                  ...commit,
+                  repoName: repo.name,
+                  repoFullName: repo.full_name
+                });
+              });
+            }
+          }
+        } catch (repoError) {
+          console.warn(`Could not fetch commits for ${repo.full_name}:`, repoError);
+        }
       }
 
-      // Set commit statistics
+      try {
+        const recentCommitsResponse = await fetch(
+          `https://api.github.com/repos/${repos[0].full_name}/commits?author=${username}&per_page=1`
+        );
+        
+        if (recentCommitsResponse.ok) {
+          const recentCommits = await recentCommitsResponse.json();
+          if (recentCommits.length > 0) {
+            const commit = recentCommits[0];
+            mostRecentCommit = {
+              time: new Date(commit.commit.author.date).toLocaleDateString() + ' at ' + 
+                    new Date(commit.commit.author.date).toLocaleTimeString(),
+              repo: repos[0].name,
+              message: commit.commit.message.split('\n')[0],
+              sha: commit.sha.substring(0, 7),
+              isToday: commit.commit.author.date.startsWith(today)
+            };
+          }
+        }
+      } catch (recentError) {
+        console.warn('Could not fetch recent commits:', recentError);
+      }
+
+      let eventsData = { totalEvents: 0, pushEvents: 0 };
+      try {
+        const eventsResponse = await fetch(
+          `https://api.github.com/users/${username}/events/public`
+        );
+        
+        if (eventsResponse.ok) {
+          const events = await eventsResponse.json();
+          if (Array.isArray(events)) {
+            eventsData.totalEvents = events.length;
+            eventsData.pushEvents = events.filter(e => e.type === 'PushEvent').length;
+          }
+        }
+      } catch (eventsError) {
+        console.warn('Events API error:', eventsError);
+      }
+
       setCommitStats({
-        todayCount: todayCommitCount,
-        totalRecentEvents: pushEvents.length,
-        lastCommit: lastCommitInfo
+        todayCount: totalTodayCommits,
+        todayRepos: reposWithCommitsToday,
+        totalRecentEvents: eventsData.pushEvents,
+        totalRepos: Math.min(repos.length, 5),
+        lastCommit: mostRecentCommit,
+        apiInfo: {
+          totalEvents: eventsData.totalEvents,
+          pushEvents: eventsData.pushEvents,
+          reposChecked: Math.min(repos.length, 5)
+        }
       });
 
-      if (todayCommitCount > 0) {
-        setStatus(`✅ You coded today! ${todayCommitCount} commit${todayCommitCount > 1 ? 's' : ''} made 🚀`);
+      if (totalTodayCommits > 0) {
+        const repoText = reposWithCommitsToday === 1 ? 'repository' : 'repositories';
+        setStatus(`✅ You coded today! ${totalTodayCommits} commit${totalTodayCommits > 1 ? 's' : ''} across ${reposWithCommitsToday} ${repoText} 🚀`);
+      } else if (mostRecentCommit) {
+        const timeSinceLastCommit = mostRecentCommit.isToday ? 'today' : 'recently';
+        setStatus(`❌ No commits today, but you committed ${timeSinceLastCommit}. Keep coding! 💻`);
       } else {
-        setStatus("❌ No commits yet today. Time to code! 💻");
+        setStatus("❌ No recent commit activity found. Time to start coding! 💻");
       }
+      
     } catch (error) {
-      setStatus("❌ Error fetching data.");
+      console.error('API Error:', error);
+      setStatus(`❌ Error fetching data: ${error.message}`);
     }
 
     setLoading(false);
@@ -134,6 +198,16 @@ function App() {
               </div>
               
               <div className="stat-item">
+                <div className="stat-number">{commitStats.todayRepos}</div>
+                <div className="stat-label">Repositories Today</div>
+              </div>
+              
+              <div className="stat-item">
+                <div className="stat-number">{commitStats.apiInfo.reposChecked}</div>
+                <div className="stat-label">Repos Checked</div>
+              </div>
+              
+              <div className="stat-item">
                 <div className="stat-number">{commitStats.totalRecentEvents}</div>
                 <div className="stat-label">Recent Push Events</div>
               </div>
@@ -141,14 +215,23 @@ function App() {
             
             {commitStats.lastCommit && (
               <div className="last-commit-info">
-                <h4 className="last-commit-title">🕒 Last Activity</h4>
+                <h4 className="last-commit-title">
+                  🕒 Last Commit {commitStats.lastCommit.isToday ? '(Today)' : ''}
+                </h4>
                 <p className="last-commit-details">
-                  <strong>{commitStats.lastCommit.repo}</strong><br/>
-                  {commitStats.lastCommit.commitCount} commit{commitStats.lastCommit.commitCount > 1 ? 's' : ''}<br/>
+                  <strong>{commitStats.lastCommit.repo}</strong> #{commitStats.lastCommit.sha}<br/>
+                  "{commitStats.lastCommit.message}"<br/>
                   <span className="commit-time">{commitStats.lastCommit.time}</span>
                 </p>
               </div>
             )}
+            
+            <div className="api-info">
+              <small className="api-disclaimer">
+                ✨ <strong>Real-time data</strong>: Using direct repository API calls for accurate, up-to-date commit information.
+                Checking your {commitStats.apiInfo.reposChecked} most recently updated repositories.
+              </small>
+            </div>
           </div>
         )}
       </div>
