@@ -1,9 +1,8 @@
-import React from 'react';
+import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 const GitHubAuth = () => {
-  const handleGitHubLogin = () => {
-    window.location.href = 'http://localhost:5001/auth/github';
-  };
+  const { login } = useAuth();
 
   return (
     <div className="auth-section">
@@ -12,8 +11,9 @@ const GitHubAuth = () => {
       </p>
       <button 
         className="github-login-button"
-        onClick={handleGitHubLogin}
+        onClick={login}
       >
+        <span className="github-icon">📦</span>
         Login with GitHub
       </button>
     </div>

@@ -1,22 +1,30 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useCommitData = () => {
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [commitStats, setCommitStats] = useState(null);
 
-  const checkCommits = async (username) => {
+  const getStatusClass = () => {
+    if (loading) return 'loading';
+    if (status.includes('✅')) return 'status-success';
+    if (status.includes('❌')) return 'status-error';
+    if (status.includes('⚠️')) return 'status-warning';
+    return '';
+  };
+
+  const checkCommits = useCallback(async (username) => {
     if (!username) {
-      setStatus("⚠️ Please enter a GitHub username.");
+      setStatus('⚠️ Please enter a GitHub username.');
       return;
     }
 
     setLoading(true);
-    setStatus("");
+    setStatus('');
     setCommitStats(null);
 
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split('T')[0];
       
       const reposResponse = await fetch(
         `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`
@@ -29,7 +37,7 @@ export const useCommitData = () => {
       const repos = await reposResponse.json();
       
       if (!Array.isArray(repos) || repos.length === 0) {
-        setStatus("❌ No repositories found for this user.");
+        setStatus('❌ No repositories found for this user.');
         setLoading(false);
         return;
       }
@@ -126,7 +134,7 @@ export const useCommitData = () => {
         const timeSinceLastCommit = mostRecentCommit.isToday ? 'today' : 'recently';
         setStatus(`❌ No commits today, but you committed ${timeSinceLastCommit}. Keep coding! 💻`);
       } else {
-        setStatus("❌ No recent commit activity found. Time to start coding! 💻");
+        setStatus('❌ No recent commit activity found. Time to start coding! 💻');
       }
       
     } catch (error) {
@@ -135,12 +143,13 @@ export const useCommitData = () => {
     }
 
     setLoading(false);
-  };
+  }, []);
 
   return {
     loading,
     status,
     commitStats,
-    checkCommits
+    checkCommits,
+    getStatusClass
   };
 };
