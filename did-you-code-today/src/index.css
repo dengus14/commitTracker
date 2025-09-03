@@ -75,9 +75,10 @@ code {
 .github-login-button {
   background: #238636;
   color: white;
-  border: 1px solid #30363d;
+  border: solid;
+  border-color: #238636;
+  border-radius: 10px;
   padding: 0.75rem 1.5rem;
-  border-radius: 0;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -89,6 +90,12 @@ code {
   background: #2ea043;
   border-color: #30363d;
   transform: none;
+}
+
+.github-icon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .divider {
@@ -352,8 +359,8 @@ code {
 .logout-button {
   background: #da3633;
   color: white;
-  border: 1px solid #30363d;
-  border-radius: 0;
+  border: solid #da3633;
+  border-radius: 10px;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   font-weight: 500;
