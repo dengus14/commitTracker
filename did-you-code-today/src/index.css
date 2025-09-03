@@ -598,4 +598,82 @@ code {
   .side-drawer {
     width: 280px;
   }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .footer-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* Footer Styles */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  padding: 1rem;
+  text-align: center;
+  z-index: 5;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.footer-text {
+  margin: 0;
+  color: #8b949e;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.footer-link {
+  color: #8b949e;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  color: #e6edf3;
+  background: #30363d;
+  transform: translateY(-2px);
+}
+
+.footer-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Adjust app container to account for footer */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 2rem 4rem 2rem; /* Added bottom padding for footer */
 }

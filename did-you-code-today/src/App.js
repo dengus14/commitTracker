@@ -7,6 +7,7 @@ import StatusMessage from "./components/StatusMessage";
 import CommitStats from "./components/CommitStats";
 import Divider from "./components/Divider";
 import Dashboard from "./components/Dashboard";
+import Footer from "./components/Footer";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
