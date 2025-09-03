@@ -7,7 +7,6 @@ import StatusMessage from "./components/StatusMessage";
 import CommitStats from "./components/CommitStats";
 import Divider from "./components/Divider";
 import Dashboard from "./components/Dashboard";
-import SideDrawerDemo from "./components/SideDrawerDemo";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
@@ -50,11 +49,6 @@ function App() {
             <StatusMessage status={status} loading={loading} />
             
             <CommitStats commitStats={commitStats} loading={loading} />
-            
-            <Divider text="Side Drawer Demo" />
-            
-            {/* Demo Component - Remove this after learning */}
-            <SideDrawerDemo />
           </>
         )}
       </div>
