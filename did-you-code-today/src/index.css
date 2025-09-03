@@ -368,6 +368,32 @@ code {
 /* Dashboard Styles */
 .dashboard {
   width: 100%;
+  position: relative;
+}
+
+/* Menu Button */
+.menu-button {
+  position: absolute;
+  top: -2rem;
+  left: -2rem;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.menu-button:hover {
+  background: #30363d;
+  transform: scale(1.05);
 }
 
 .dashboard-content {
@@ -445,4 +471,124 @@ code {
   font-size: 1.5rem;
   margin: 0;
   font-weight: 500;
+}
+
+/* Side Drawer Styles */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  z-index: 998;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.drawer-overlay--open {
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 320px;
+  max-width: 80vw;
+  background: #21262d;
+  border-right: 1px solid #30363d;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-drawer--open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #30363d;
+  background: #161b22;
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e6edf3;
+}
+
+.drawer-close-button {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.drawer-close-button:hover {
+  color: #e6edf3;
+  background: #30363d;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* Drawer Navigation Items (example styling) */
+.drawer-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.drawer-nav-item {
+  margin-bottom: 0.5rem;
+}
+
+.drawer-nav-link {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  color: #e6edf3;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  font-size: 1rem;
+}
+
+.drawer-nav-link:hover {
+  background: #30363d;
+}
+
+.drawer-nav-link.active {
+  background: #1f6feb;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .side-drawer {
+    width: 280px;
+  }
 }
