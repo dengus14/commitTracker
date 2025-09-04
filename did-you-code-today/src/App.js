@@ -8,10 +8,11 @@ import CommitStats from "./components/CommitStats";
 import Divider from "./components/Divider";
 import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer";
+import ThemeToggle from "./components/ThemeToggle";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const { loading, status, commitStats, checkCommits } = useCommitData();
 
   // Show loading screen while checking authentication
@@ -29,8 +30,21 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="main-card">
+      <header className="app-header">
         <h1 className="title">Commit Tracker</h1>
+        <div className="header-actions">
+          <ThemeToggle />
+          {isAuthenticated && user && (
+            <button 
+              onClick={logout}
+              className="header-logout-button"
+            >
+              Logout
+            </button>
+          )}
+        </div>
+      </header>
+      <div className="main-card">
         <p className="subtitle">
           Track your daily coding activity on GitHub
         </p>

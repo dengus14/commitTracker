@@ -1,3 +1,77 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Variables for Themes */
+:root[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #21262d;
+  --bg-tertiary: #161b22;
+  --border-primary: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #656d76;
+  --accent-primary: #1f6feb;
+  --accent-secondary: #388bfd;
+  --success-color: #238636;
+  --success-hover: #2ea043;
+  --error-color: #da3633;
+  --error-hover: #f85149;
+  --warning-color: #ffd700;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #ffffff;
+  --border-primary: #d1d9e0;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #656d76;
+  --accent-primary: #0969da;
+  --accent-secondary: #218bff;
+  --success-color: #1a7f37;
+  --success-hover: #1f883d;
+  --error-color: #d1242f;
+  --error-hover: #e82a2f;
+  --warning-color: #bf8700;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button {
+  background: var(--error-color);
+  color: white;
+  border: 1px solid var(--border-primary);
+  border-radius: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background: var(--error-hover);
+}
+
+:root[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #ffffff;
+  --border-primary: #d1d9e0;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #656d76;
+  --accent-primary: #0969da;
+  --accent-secondary: #218bff;
+  --success-color: #1a7f37;
+  --success-hover: #1f883d;
+  --error-color: #d1242f;
+  --error-hover: #e82a2f;
+  --warning-color: #bf8700;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,9 +85,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0d1117;
+  background: var(--bg-primary);
   min-height: 100vh;
-  color: #e6edf3;
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 code {
@@ -25,58 +100,114 @@ code {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 2rem 4rem 4rem 4rem;
+}
+
+.app-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-right: 1rem;
+}
+
+.theme-toggle {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.header-logout-button {
+  background: var(--error-color);
+  color: white;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-logout-button:hover {
+  background: var(--error-hover);
+  transform: translateY(-1px);
 }
 
 .main-card {
-  background: #21262d;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 0;
   padding: 3rem 2rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  max-width: 500px;
+  box-shadow: var(--shadow);
+  max-width: 800px;
   width: 100%;
-  text-align: center;
+  text-align: left;
+  margin: 0 auto;
+  transition: all 0.3s ease;
 }
 
 .title {
   font-size: 2.5rem;
-  font-weight: bold;
+  font-weight: 700;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {
-  color: #8b949e;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
   font-size: 1.1rem;
+  transition: color 0.3s ease;
 }
 
 .auth-section {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #161b22;
+  background: var(--bg-tertiary);
   border-radius: 0;
-  border: 1px solid #30363d;
+  border: 1px solid var(--border-primary);
   text-align: center;
+  transition: all 0.3s ease;
 }
 
 .auth-text {
   margin: 0 0 1rem 0;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 1rem;
+  transition: color 0.3s ease;
 }
 
 .github-login-button {
-  background: #238636;
+  background: var(--success-color);
   color: white;
   border: solid;
-  border-color: #238636;
+  border-color: var(--success-color);
   border-radius: 10px;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -87,8 +218,8 @@ code {
 }
 
 .github-login-button:hover {
-  background: #2ea043;
-  border-color: #30363d;
+  background: var(--success-hover);
+  border-color: var(--border-primary);
   transform: none;
 }
 
@@ -102,8 +233,9 @@ code {
   position: relative;
   text-align: center;
   margin: 2rem 0;
-  color: #656d76;
+  color: var(--text-muted);
   font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
 .divider::before {
@@ -113,15 +245,17 @@ code {
   left: 0;
   right: 0;
   height: 1px;
-  background: #30363d;
+  background: var(--border-primary);
   z-index: 1;
+  transition: background-color 0.3s ease;
 }
 
 .divider span {
-  background: #21262d;
+  background: var(--bg-secondary);
   padding: 0 1rem;
   position: relative;
   z-index: 2;
+  transition: background-color 0.3s ease;
 }
 
 .input-container {
@@ -131,35 +265,35 @@ code {
 .username-input {
   width: 100%;
   padding: 1rem;
-  border: 1px solid #30363d;
-  background: #0d1117;
-  color: #e6edf3;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   border-radius: 0;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
   outline: none;
 }
 
 .username-input:focus {
-  border-color: #1f6feb;
-  background: #161b22;
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
 }
 
 .check-button {
-  background: #1f6feb;
+  background: var(--accent-primary);
   color: white;
-  border: 1px solid #30363d;
+  border: 1px solid var(--border-primary);
   padding: 1rem 2rem;
   border-radius: 0;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   width: 100%;
 }
 
 .check-button:hover {
-  background: #388bfd;
+  background: var(--accent-secondary);
 }
 
 .check-button:disabled {
@@ -171,7 +305,7 @@ code {
 .status-container {
   margin-top: 2rem;
   padding: 2rem;
-  border-radius: 0;
+  border-radius: 3px;
   font-size: 1rem;
   font-weight: 400;
   min-height: auto;
@@ -185,12 +319,15 @@ code {
 }
 
 .status-success {
-  background: transparent;
+  background: rgba(35, 134, 54, 0.1);
   color: #00d4aa;
-  border: none;
+  border: 1px solid rgba(35, 134, 54, 0.3);
+  border-radius: 3px;
+  padding: 1rem;
   font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
 .status-success::before {
@@ -198,12 +335,15 @@ code {
 }
 
 .status-error {
-  background: transparent;
+  background: rgba(229, 9, 20, 0.1);
   color: #e50914;
-  border: none;
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 3px;
+  padding: 1rem;
   font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
 .status-error::before {
@@ -211,12 +351,15 @@ code {
 }
 
 .status-warning {
-  background: transparent;
+  background: rgba(255, 215, 0, 0.1);
   color: #ffd700;
-  border: none;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+  padding: 1rem;
   font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
 .status-warning::before {
@@ -233,16 +376,18 @@ code {
 .stats-container {
   margin-top: 2rem;
   padding: 1.5rem;
-  background: #161b22;
-  border-radius: 0;
-  border: 1px solid #30363d;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s ease;
 }
 
 .stats-title {
   margin: 0 0 1rem 0;
-  color: #e6edf3;
+  color: var(--text-primary);
   font-size: 1.1rem;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .stats-grid {
@@ -255,29 +400,33 @@ code {
 .stat-item {
   text-align: center;
   padding: 1rem;
-  background: #21262d;
-  border-radius: 0;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s ease;
 }
 
 .stat-number {
   font-size: 2rem;
   font-weight: bold;
-  color: #1f6feb;
+  color: var(--accent-primary);
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 .last-commit-info {
-  background: #21262d;
+  background: var(--bg-secondary);
   padding: 1rem;
-  border-radius: 0;
-  border: 1px solid #30363d;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s ease;
 }
 
 .last-commit-title {
@@ -318,11 +467,12 @@ code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   border-radius: 0;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
 }
 
 .user-info {
@@ -335,8 +485,9 @@ code {
   width: 50px;
   height: 50px;
   border-radius: 0;
-  border: 1px solid #30363d;
+  border: 1px solid var(--border-primary);
   object-fit: cover;
+  transition: border-color 0.3s ease;
 }
 
 .user-details {
@@ -347,13 +498,15 @@ code {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 0.25rem 0;
-  color: #e6edf3;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .user-username {
   font-size: 0.9rem;
-  color: #8b949e;
+  color: var(--text-secondary);
   margin: 0;
+  transition: color 0.3s ease;
 }
 
 .logout-button {
@@ -410,13 +563,14 @@ code {
 .dashboard-title {
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: #e6edf3;
+  color: var(--text-primary);
   font-weight: 400;
   position: relative;
   padding-bottom: 1rem;
   line-height: 1.4;
   letter-spacing: 0.5px;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .dashboard-title::after {
@@ -427,12 +581,14 @@ code {
   transform: translateX(-50%);
   width: 120px;
   height: 1px;
-  background: #30363d;
+  background: var(--border-primary);
+  transition: background-color 0.3s ease;
 }
 
 .dashboard-title strong {
-  color: #1f6feb;
+  color: var(--accent-primary);
   font-weight: 700;
+  transition: color 0.3s ease;
 }
 
 .loading-message {
@@ -446,20 +602,20 @@ code {
 }
 
 .refresh-button {
-  background: #1f6feb;
+  background: var(--accent-primary);
   color: white;
-  border: 1px solid #30363d;
+  border: 1px solid var(--border-primary);
   border-radius: 0;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
   margin-top: 1rem;
 }
 
 .refresh-button:hover {
-  background: #388bfd;
+  background: var(--accent-secondary);
 }
 
 .refresh-button:disabled {
@@ -615,11 +771,12 @@ code {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #161b22;
-  border-top: 1px solid #30363d;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-primary);
   padding: 1rem;
   text-align: center;
   z-index: 5;
+  transition: all 0.3s ease;
 }
 
 .footer-content {
@@ -633,10 +790,11 @@ code {
 
 .footer-text {
   margin: 0;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 400;
   letter-spacing: 0.3px;
+  transition: color 0.3s ease;
 }
 
 .footer-links {
@@ -646,7 +804,7 @@ code {
 }
 
 .footer-link {
-  color: #8b949e;
+  color: var(--text-secondary);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -658,8 +816,8 @@ code {
 }
 
 .footer-link:hover {
-  color: #e6edf3;
-  background: #30363d;
+  color: var(--text-primary);
+  background: var(--border-primary);
   transform: translateY(-2px);
 }
 
@@ -673,7 +831,5 @@ code {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 2rem 4rem 2rem; /* Added bottom padding for footer */
+  padding: 2rem 4rem 4rem 4rem;
 }

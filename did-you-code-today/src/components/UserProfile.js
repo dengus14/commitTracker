@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 
 const UserProfile = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   if (!user) return null;
 
@@ -19,12 +19,6 @@ const UserProfile = () => {
           <p className="user-username">@{user.username}</p>
         </div>
       </div>
-      <button 
-        onClick={logout}
-        className="logout-button"
-      >
-        Logout
-      </button>
     </div>
   );
 };
