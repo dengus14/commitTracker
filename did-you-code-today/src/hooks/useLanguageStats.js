@@ -43,55 +43,33 @@ export const useLanguageStats = () => {
 
   const fetchLanguageStats = useCallback(async (username) => {
     if (!username) {
-      setStatus('Please enter a GitHub username.');
+      setError('Please enter a GitHub username.');
       return;
     }
 
     if (isLoadingRef.current) {
-      return; // Prevent multiple simultaneous requests
+      return; 
     }
 
     isLoadingRef.current = true;
     setLoading(true);
-    setStatus('');
-    setCommitStats(null);
+    setError('');
+    setLanguageData(null);
 
     try {
-      // Get today in user's local timezone
-      const now = new Date();
-      const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const tomorrowLocal = new Date(todayLocal);
-      tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
+      console.log('Fetching repos for user:', username);
       
-      // Convert to ISO strings for GitHub API (which expects UTC)
-      const todayStart = todayLocal.toISOString();
-      const todayEnd = tomorrowLocal.toISOString();
-      
-      console.log('Date range for today:', {
-        local: {
-          start: todayLocal.toString(),
-          end: tomorrowLocal.toString()
-        },
-        utc: {
-          start: todayStart,
-          end: todayEnd
-        }
-      });
-      
-      console.log('Fetching repos for user:', username, user?.hasToken ? '(authenticated)' : '(unauthenticated)');
-      const reposResponse = await fetchGitHub(`users/${username}/repos?sort=updated&per_page=10`);
-      
-      console.log('Repos response status:', reposResponse.status);
+      const reposResponse = await fetchGitHub(`users/${username}/repos?per_page=100&sort=updated`);
       
       if (!reposResponse.ok) {
         if (reposResponse.status === 403) {
-          setStatus('GitHub API rate limit exceeded (60 requests/hour). Please try again later or login with GitHub for higher limits.');
+          setError('GitHub API rate limit exceeded. Please try again later or login with GitHub.');
           isLoadingRef.current = false;
           setLoading(false);
           return;
         }
         if (reposResponse.status === 404) {
-          setStatus('User not found. Please check the username.');
+          setError('User not found. Please check the username.');
           isLoadingRef.current = false;
           setLoading(false);
           return;
@@ -102,136 +80,62 @@ export const useLanguageStats = () => {
       const repos = await reposResponse.json();
       
       if (!Array.isArray(repos) || repos.length === 0) {
-        setStatus('No repositories found for this user.');
+        setError('No repositories found for this user.');
         isLoadingRef.current = false;
         setLoading(false);
         return;
       }
 
-      let totalTodayCommits = 0;
-      let reposWithCommitsToday = 0;
-      let allCommitsToday = [];
-      let mostRecentCommit = null;
+      const languageTotals = {};
+      let totalBytes = 0;
 
-      for (const repo of repos.slice(0, 3)) { // Reduced from 5 to 3 to avoid rate limits
+      for (const repo of repos) {
         try {
-          const commitsResponse = await fetchGitHub(
-            `repos/${repo.full_name}/commits?author=${username}&since=${todayStart}&until=${todayEnd}`
-          );
+          const languagesResponse = await fetchGitHub(`repos/${repo.full_name}/languages`);
           
-          if (commitsResponse.status === 403) {
-            // Hit rate limit, stop checking more repos
-            setStatus('GitHub API rate limit reached. Showing partial results. Please login for full access.');
+          if (languagesResponse.status === 403) {
+            setError('GitHub API rate limit reached. Showing partial results.');
             break;
           }
           
-          if (commitsResponse.ok) {
-            const commits = await commitsResponse.json();
+          if (languagesResponse.ok) {
+            const languages = await languagesResponse.json();
             
-            if (commits.length > 0) {
-              // Double-check each commit is actually today in user's timezone
-              const todayCommits = commits.filter(commit => {
-                const commitDate = new Date(commit.commit.author.date);
-                const commitLocalDate = new Date(commitDate.getFullYear(), commitDate.getMonth(), commitDate.getDate());
-                return commitLocalDate.getTime() === todayLocal.getTime();
-              });
-              
-              if (todayCommits.length > 0) {
-                totalTodayCommits += todayCommits.length;
-                reposWithCommitsToday++;
-                
-                todayCommits.forEach(commit => {
-                  allCommitsToday.push({
-                    ...commit,
-                    repoName: repo.name,
-                    repoFullName: repo.full_name
-                  });
-                });
-              }
-            }
+            Object.entries(languages).forEach(([language, bytes]) => {
+              languageTotals[language] = (languageTotals[language] || 0) + bytes;
+              totalBytes += bytes;
+            });
           }
         } catch (repoError) {
-          console.warn(`Could not fetch commits for ${repo.full_name}:`, repoError);
+          console.warn(`Could not fetch languages for ${repo.full_name}:`, repoError);
         }
       }
 
-      try {
-        const recentCommitsResponse = await fetchGitHub(
-          `repos/${repos[0].full_name}/commits?author=${username}&per_page=1`
-        );
-        
-        if (recentCommitsResponse.ok) {
-          const recentCommits = await recentCommitsResponse.json();
-          if (recentCommits.length > 0) {
-            const commit = recentCommits[0];
-            const commitDate = new Date(commit.commit.author.date);
-            const commitLocalDate = new Date(commitDate.getFullYear(), commitDate.getMonth(), commitDate.getDate());
-            const isToday = commitLocalDate.getTime() === todayLocal.getTime();
-            
-            mostRecentCommit = {
-              time: commitDate.toLocaleDateString() + ' at ' + commitDate.toLocaleTimeString(),
-              repo: repos[0].name,
-              message: commit.commit.message.split('\n')[0],
-              sha: commit.sha.substring(0, 7),
-              isToday: isToday
-            };
-          }
-        }
-      } catch (recentError) {
-        console.warn('Could not fetch recent commits:', recentError);
-      }
+      const languageArray = Object.entries(languageTotals)
+        .map(([language, bytes]) => ({
+          name: language,
+          bytes: bytes,
+          percentage: ((bytes / totalBytes) * 100).toFixed(1)
+        }))
+        .sort((a, b) => b.bytes - a.bytes); 
 
-      let eventsData = { totalEvents: 0, pushEvents: 0 };
-      try {
-        const eventsResponse = await fetchGitHub(
-          `users/${username}/events/public`
-        );
-        
-        if (eventsResponse.ok) {
-          const events = await eventsResponse.json();
-          if (Array.isArray(events)) {
-            eventsData.totalEvents = events.length;
-            eventsData.pushEvents = events.filter(e => e.type === 'PushEvent').length;
-          }
-        }
-      } catch (eventsError) {
-        console.warn('Events API error:', eventsError);
-      }
-
-      setCommitStats({
-        todayCount: totalTodayCommits,
-        todayRepos: reposWithCommitsToday,
-        totalRecentEvents: eventsData.pushEvents,
-        totalRepos: Math.min(repos.length, 3), 
-        lastCommit: mostRecentCommit,
-        apiInfo: {
-          totalEvents: eventsData.totalEvents,
-          pushEvents: eventsData.pushEvents,
-          reposChecked: Math.min(repos.length, 3) 
-        }
+      setLanguageData({
+        languages: languageArray,
+        totalBytes: totalBytes,
+        reposChecked: repos.length
       });
-
-      if (totalTodayCommits > 0) {
-        const repoText = reposWithCommitsToday === 1 ? 'repository' : 'repositories';
-        setStatus(`✅ You coded today! ${totalTodayCommits} commit${totalTodayCommits > 1 ? 's' : ''} across ${reposWithCommitsToday} ${repoText}`);
-      } else if (mostRecentCommit) {
-        const timeSinceLastCommit = mostRecentCommit.isToday ? 'today' : 'recently';
-        setStatus(`⚠️ No commits today, but you committed ${timeSinceLastCommit}. Keep coding!`);
-      } else {
-        setStatus('❌ No recent commit activity found. Time to start coding!');
-      }
       
     } catch (error) {
       console.error('API Error:', error);
       
       if (error.message.includes('403')) {
-        setStatus('❌ GitHub API rate limit exceeded. Please login with GitHub or try again later.');
+        setError('GitHub API rate limit exceeded. Please login with GitHub or try again later.');
       } else if (error.message.includes('404')) {
-        setStatus('❌ User not found. Please check the username.');
+        setError('User not found. Please check the username.');
       } else if (error.message.includes('Failed to fetch')) {
-        setStatus('❌ Network error. Please check your internet connection.');
+        setError('Network error. Please check your internet connection.');
       } else {
-        setStatus(`❌ Error: ${error.message}`);
+        setError(`Error: ${error.message}`);
       }
     }
 
@@ -241,9 +145,8 @@ export const useLanguageStats = () => {
 
   return {
     loading,
-    status,
-    commitStats,
-    checkCommits,
-    getStatusClass
+    languageData,
+    error,
+    fetchLanguageStats
   };
 };

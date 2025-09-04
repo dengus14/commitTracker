@@ -10,13 +10,13 @@ import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer";
 import ThemeToggle from "./components/ThemeToggle";
 import MiniCalendar from "./components/MiniCalendar";
+import LanguageStats from "./components/LanguageStats";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
   const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const { loading, status, commitStats, checkCommits } = useCommitData();
 
-  // Show loading screen while checking authentication
   if (authLoading) {
     return (
       <div className="app-container">
@@ -75,6 +75,7 @@ function App() {
         
         <div className="sidebar">
           <MiniCalendar />
+          <LanguageStats />
         </div>
       </div>
       
