@@ -9,6 +9,7 @@ import Divider from "./components/Divider";
 import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer";
 import ThemeToggle from "./components/ThemeToggle";
+import MiniCalendar from "./components/MiniCalendar";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
@@ -44,29 +45,39 @@ function App() {
           )}
         </div>
       </header>
-      <div className="main-card">
-        <p className="subtitle">
-          Track your daily coding activity on GitHub
-        </p>
+      
+      <div className="content-with-sidebar">
+        <div className="main-content">
+          <div className="main-card">
+            <p className="subtitle">
+              Track your daily coding activity on GitHub
+            </p>
+            
+            {isAuthenticated && user ? (
+              // Authenticated user dashboard with side drawer
+              <Dashboard />
+            ) : (
+              // Non-authenticated user flow
+              <>
+                <GitHubAuth />
+                
+                <Divider text="or check manually" />
+                
+                <CommitChecker onCheck={checkCommits} loading={loading} />
+                
+                <StatusMessage status={status} loading={loading} />
+                
+                <CommitStats commitStats={commitStats} loading={loading} />
+              </>
+            )}
+          </div>
+        </div>
         
-        {isAuthenticated && user ? (
-          // Authenticated user dashboard with side drawer
-          <Dashboard />
-        ) : (
-          // Non-authenticated user flow
-          <>
-            <GitHubAuth />
-            
-            <Divider text="or check manually" />
-            
-            <CommitChecker onCheck={checkCommits} loading={loading} />
-            
-            <StatusMessage status={status} loading={loading} />
-            
-            <CommitStats commitStats={commitStats} loading={loading} />
-          </>
-        )}
+        <div className="sidebar">
+          <MiniCalendar />
+        </div>
       </div>
+      
       <Footer />
     </div>
   );
