@@ -169,8 +169,8 @@ code {
 }
 
 .title {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 500;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   margin-bottom: 1rem;
   color: var(--text-primary);
@@ -777,7 +777,7 @@ code {
 .mini-calendar {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: 0px;
   padding: 1rem;
   width: 280px;
   transition: all 0.3s ease;
