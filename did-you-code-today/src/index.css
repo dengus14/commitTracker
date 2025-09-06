@@ -1311,6 +1311,87 @@ code {
   cursor: not-allowed;
 }
 
+/* Streak Display Specific Styles */
+.streak-main-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.streak-current,
+.streak-longest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.streak-number {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.streak-emoji {
+  font-size: 1.5rem;
+}
+
+.streak-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-weight: 500;
+}
+
+.streak-divider {
+  width: 1px;
+  height: 3rem;
+  background: var(--border-primary);
+  margin: 0 0.5rem;
+}
+
+.streak-message {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-primary);
+}
+
+.streak-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.streak-last-commit {
+  text-align: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.streak-last-commit small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
 @media (max-width: 768px) {
   .language-stats {
     padding: 1rem;

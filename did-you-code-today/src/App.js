@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import ThemeToggle from "./components/ThemeToggle";
 import MiniCalendar from "./components/MiniCalendar";
 import LanguageStats from "./components/LanguageStats";
+import StreakDisplay from "./components/StreakDisplay";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
@@ -76,6 +77,7 @@ function App() {
         <div className="sidebar">
           <MiniCalendar />
           <LanguageStats />
+          <StreakDisplay />
         </div>
       </div>
       
