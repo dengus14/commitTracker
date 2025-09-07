@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useStreakData } from '../hooks/useStreakData';
+import { useStreakData } from '../hooks/useStreakDataPersisted';
 
 const StreakDisplay = () => {
   const { user } = useAuth();
-  const { loading, streakData, error, calculateStreak } = useStreakData();
+  const { loading, streakData, error, calculateStreak, refreshStreak } = useStreakData();
 
   useEffect(() => {
     if (user && user.username) {
@@ -48,6 +48,31 @@ const StreakDisplay = () => {
     return `${Math.floor(diffDays / 30)} months ago`;
   };
 
+
+  const calculateDays = (lastCommitDate) =>{
+    if(lastCommitDate === null){
+      return "No commit data found."
+    }
+
+    const todayDate = new Date()
+    const diffTime = Math.abs(todayDate - lastCommitDate)
+
+    const days = Math.floor(diffTime / 86400000)
+
+    if (days === 0){
+      
+    }
+    else if(days === 1){
+
+    }
+    else if (days > 1 && days <= 3){
+
+    }
+    else {
+       
+    }
+  }
+
   if (loading) {
     return (
       <div className="language-stats">
@@ -87,6 +112,8 @@ const StreakDisplay = () => {
       </div>
     );
   }
+
+
 
   const { currentStreak, longestStreak, lastCommitDate } = streakData;
   const lastCommitText = formatLastCommitDate(lastCommitDate);
@@ -135,7 +162,7 @@ const StreakDisplay = () => {
         {user && (
           <button 
             className="refresh-languages-btn"
-            onClick={() => calculateStreak(user.username)}
+            onClick={() => refreshStreak(user.username)}
             disabled={loading}
           >
             🔄 Refresh
