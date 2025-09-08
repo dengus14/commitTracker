@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useStreakData } from '../hooks/useStreakDataPersisted';
+import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaQuestionCircle } from 'react-icons/fa';
 
 const StreakDisplay = () => {
   const { user } = useAuth();
@@ -49,29 +50,49 @@ const StreakDisplay = () => {
   };
 
 
-  const calculateDays = (lastCommitDate) =>{
-    if(lastCommitDate === null){
-      return "No commit data found."
-    }
-
-    const todayDate = new Date()
-    const diffTime = Math.abs(todayDate - lastCommitDate)
-
-    const days = Math.floor(diffTime / 86400000)
-
-    if (days === 0){
-      
-    }
-    else if(days === 1){
-
-    }
-    else if (days > 1 && days <= 3){
-
-    }
-    else {
-       
+  const calculateDays = (lastCommitDate) => {
+  if(lastCommitDate === null){
+    return {
+      text: "No commit data found",
+      color: "gray",
+      icon: FaQuestionCircle
     }
   }
+
+  const todayDate = new Date()
+  const commitDate = new Date(lastCommitDate)
+  const diffTime = Math.abs(todayDate - commitDate)
+  const days = Math.floor(diffTime / 86400000)
+
+  if (days === 0){
+    return {
+      text: " Today",
+      color: "green", 
+      icon: FaCheckCircle
+    }
+  }
+  else if(days === 1){
+    return {
+      text: " Yesterday",
+      color: "green",
+      icon: FaCheckCircle
+    }
+  }
+  else if (days > 1 && days <= 3){
+    return {
+      text: `${days} days ago`,
+      color: "yellow",
+      icon: FaExclamationTriangle
+    }
+  }
+  else {
+    return {
+      text: `${days} days ago`,
+      color: "red",
+      icon: FaTimesCircle
+    }
+  }
+}
 
   if (loading) {
     return (
@@ -117,6 +138,7 @@ const StreakDisplay = () => {
 
   const { currentStreak, longestStreak, lastCommitDate } = streakData;
   const lastCommitText = formatLastCommitDate(lastCommitDate);
+  const badgeInfo = calculateDays(lastCommitDate);
 
   return (
     <div className="language-stats">
@@ -151,11 +173,11 @@ const StreakDisplay = () => {
       <div className="streak-message">
         <p>{getStreakMessage(currentStreak, longestStreak)}</p>
       </div>
-
-      {lastCommitText && (
-        <div className="streak-last-commit">
-          <small>Last commit: {lastCommitText}</small>
-        </div>
+      {badgeInfo && (
+      <div className={`commit-badge commit-badge-${badgeInfo.color}`}>
+        <badgeInfo.icon size={16} />
+        <span>Last commit: {badgeInfo.text}</span>
+      </div>
       )}
 
       <div className="language-stats-footer">
