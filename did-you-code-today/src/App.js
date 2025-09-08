@@ -8,7 +8,6 @@ import CommitStats from "./components/CommitStats";
 import Divider from "./components/Divider";
 import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer";
-import ThemeToggle from "./components/ThemeToggle";
 import MiniCalendar from "./components/MiniCalendar";
 import LanguageStats from "./components/LanguageStats";
 import StreakDisplay from "./components/StreakDisplay";
@@ -35,7 +34,6 @@ function App() {
       <header className="app-header">
         <h1 className="title">Commit Tracker</h1>
         <div className="header-actions">
-          <ThemeToggle />
           {isAuthenticated && user && (
             <button 
               onClick={logout}
