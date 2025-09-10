@@ -35,9 +35,9 @@ const CommitStats = ({ commitStats, loading }) => {
             🕒 Last Commit {commitStats.lastCommit.isToday ? '(Today)' : ''}
           </h4>
           <p className="last-commit-details">
-            <strong>{commitStats.lastCommit.repo}</strong> #{commitStats.lastCommit.sha}<br/>
-            "{commitStats.lastCommit.message}"<br/>
-            <span className="commit-time">{commitStats.lastCommit.time}</span>
+            Repository: <strong> {commitStats.lastCommit.repo}</strong> #{commitStats.lastCommit.sha}<br/>
+            Commit Message: "{commitStats.lastCommit.message}"<br/>
+            <span className="commit-time">Commit Date: {commitStats.lastCommit.time}</span>
           </p>
         </div>
       )}

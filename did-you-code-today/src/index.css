@@ -799,7 +799,7 @@ code {
 }
 
 .calendar-nav-btn {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   color: var(--text-primary);
   width: 32px;
@@ -856,7 +856,7 @@ code {
 
 .calendar-day.has-day {
   color: var(--text-primary);
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid transparent;
 }
 
