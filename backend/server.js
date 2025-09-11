@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+require('dotenv').config();
 
 const connectDB = require('./config/database');
 const passport = require('./config/passport');
@@ -24,7 +24,10 @@ const startServer = async () => {
     app.use(helmet());
     app.use(morgan('combined'));
     app.use(cors({
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      origin: [
+        process.env.CLIENT_URL || 'http://localhost:3000',
+        'https://committracker.onrender.com'
+      ],
       credentials: true
     }));
 
