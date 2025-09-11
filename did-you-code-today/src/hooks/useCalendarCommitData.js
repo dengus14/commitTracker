@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const useCalendarCommitData = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [commitDates, setCommitDates] = useState(new Set());
   const [loading, setLoading] = useState(false);
 
@@ -10,9 +10,11 @@ export const useCalendarCommitData = () => {
     if (!user || !user.username) return;
     
     const fetchGitHub = async (path) => {
-      if (user && user.hasToken) {
+      if (user && user.hasToken && token) {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
-          credentials: 'include'
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
         
         if (response.ok) {

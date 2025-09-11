@@ -2,16 +2,18 @@ import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const useCommitData = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [commitStats, setCommitStats] = useState(null);
   const isLoadingRef = useRef(false);
 
   const fetchGitHub = async (path) => {
-    if (user && user.hasToken) {
+    if (user && user.hasToken && token) {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (response.ok) {

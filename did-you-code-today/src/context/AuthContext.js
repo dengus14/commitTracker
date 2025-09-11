@@ -14,16 +14,41 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem('auth_token'));
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    // Check for token in URL (from OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    
+    if (tokenFromUrl) {
+      localStorage.setItem('auth_token', tokenFromUrl);
+      setToken(tokenFromUrl);
+      // Remove token from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    if (token) {
+      checkAuthStatus();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
 
   const checkAuthStatus = async () => {
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
-        credentials: 'include', 
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
@@ -32,15 +57,23 @@ export const AuthProvider = ({ children }) => {
           setUser(result.data);
           setIsAuthenticated(true);
         } else {
+          // Invalid token
+          localStorage.removeItem('auth_token');
+          setToken(null);
           setUser(null);
           setIsAuthenticated(false);
         }
       } else {
+        // Unauthorized or invalid token
+        localStorage.removeItem('auth_token');
+        setToken(null);
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      localStorage.removeItem('auth_token');
+      setToken(null);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -54,16 +87,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setUser(null);
-        setIsAuthenticated(false);
-        window.location.href = '/';
-      }
+      localStorage.removeItem('auth_token');
+      setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      window.location.href = '/';
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -73,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated,
     loading,
+    token,
     login,
     logout,
     checkAuthStatus,

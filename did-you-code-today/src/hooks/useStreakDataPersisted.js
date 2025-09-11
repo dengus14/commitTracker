@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const useStreakData = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [streakData, setStreakData] = useState(null);
   const [error, setError] = useState(null);
@@ -24,8 +24,13 @@ export const useStreakData = () => {
     setStreakData(null);
 
     try {
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/streak/${username}`, {
-        credentials: 'include'
+        headers
       });
 
       const result = await response.json();
@@ -52,7 +57,7 @@ export const useStreakData = () => {
   }, []);
 
   const refreshStreak = useCallback(async (username) => {
-    if (!username || !user) {
+    if (!username || !user || !token) {
       setError('Authentication required for refresh');
       return;
     }
@@ -68,7 +73,9 @@ export const useStreakData = () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/streak/${username}/refresh`, {
         method: 'POST',
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const result = await response.json();

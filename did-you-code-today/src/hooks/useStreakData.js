@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const useStreakData = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [streakData, setStreakData] = useState(null);
   const [error, setError] = useState(null);
@@ -10,9 +10,11 @@ export const useStreakData = () => {
 
   const fetchGitHub = async (path) => {
     try {
-      if (user && user.hasToken) {
+      if (user && user.hasToken && token) {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
-          credentials: 'include'
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
         
         if (response.ok) {
