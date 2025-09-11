@@ -11,7 +11,7 @@ export const useStreakData = () => {
   const fetchGitHub = async (path) => {
     try {
       if (user && user.hasToken) {
-        const response = await fetch(`http://localhost:5001/api/github/${path}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
           credentials: 'include'
         });
         

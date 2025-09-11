@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/user', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
         credentials: 'include', 
       });
 
@@ -49,12 +49,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = () => {
-    window.location.href = 'http://localhost:5001/auth/github';
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/github`;
   };
 
   const logout = async () => {
     try {
-      const response = await fetch('http://localhost:5001/auth/logout', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

@@ -24,7 +24,7 @@ export const useStreakData = () => {
     setStreakData(null);
 
     try {
-      const response = await fetch(`http://localhost:5001/api/streak/${username}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/streak/${username}`, {
         credentials: 'include'
       });
 
@@ -66,7 +66,7 @@ export const useStreakData = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:5001/api/streak/${username}/refresh`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/streak/${username}/refresh`, {
         method: 'POST',
         credentials: 'include'
       });
