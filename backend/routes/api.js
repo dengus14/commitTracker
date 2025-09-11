@@ -1,17 +1,32 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const StreakData = require('../models/StreakData');
 const router = express.Router();
 
-router.get('/user', async (req, res) => {
+// JWT verification middleware
+const verifyToken = async (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+  
   try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authenticated'
-      });
+    const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found' });
     }
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: 'Invalid token' });
+  }
+};
 
+router.get('/user', verifyToken, async (req, res) => {
+  try {
     res.json({
       success: true,
       data: {
@@ -33,12 +48,12 @@ router.get('/user', async (req, res) => {
 });
 
 // Authenticated GitHub API proxy endpoint
-router.get('/github/*', async (req, res) => {
+router.get('/github/*', verifyToken, async (req, res) => {
   try {
-    if (!req.user || !req.user.accessToken) {
+    if (!req.user.accessToken) {
       return res.status(401).json({
         success: false,
-        message: 'Not authenticated or missing GitHub token'
+        message: 'Missing GitHub token'
       });
     }
 
@@ -248,7 +263,7 @@ const calculateStreakFromGitHub = async (username, accessToken) => {
   };
 };
 
-router.get('/streak/:username', async (req, res) => {
+router.get('/streak/:username', verifyToken, async (req, res) => {
   try {
     const { username } = req.params;
     const CACHE_DURATION = 24 * 60 * 60 * 1000;
@@ -268,18 +283,10 @@ router.get('/streak/:username', async (req, res) => {
       });
     }
     
-    if (!req.user || !req.user.accessToken) {
-      const publicData = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=5`);
-      if (!publicData.ok) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found or repositories not accessible'
-        });
-      }
-      
+    if (!req.user.accessToken) {
       return res.json({
         success: false,
-        message: 'Authentication required for streak calculation',
+        message: 'GitHub token required for streak calculation',
         requiresAuth: true
       });
     }
@@ -319,14 +326,14 @@ router.get('/streak/:username', async (req, res) => {
   }
 });
 
-router.post('/streak/:username/refresh', async (req, res) => {
+router.post('/streak/:username/refresh', verifyToken, async (req, res) => {
   try {
     const { username } = req.params;
     
-    if (!req.user || !req.user.accessToken) {
+    if (!req.user.accessToken) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required for streak refresh'
+        message: 'GitHub token required for streak refresh'
       });
     }
 
