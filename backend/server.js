@@ -35,7 +35,7 @@ const startServer = async () => {
     app.use(express.urlencoded({ extended: true }));
 
     app.use(session({
-      secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
+      secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       store: MongoStore.create({
