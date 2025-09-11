@@ -56,7 +56,7 @@ export const useCommitData = () => {
     }
 
     if (isLoadingRef.current) {
-      return; // Prevent multiple simultaneous requests
+      return; // dont allow multiple requests at once
     }
 
     isLoadingRef.current = true;
@@ -65,31 +65,17 @@ export const useCommitData = () => {
     setCommitStats(null);
 
     try {
-      // Get today in user's local timezone
+      // get today's date in local time
       const now = new Date();
       const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const tomorrowLocal = new Date(todayLocal);
       tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
       
-      // Convert to ISO strings for GitHub API (which expects UTC)
+      // convert to iso for github api
       const todayStart = todayLocal.toISOString();
       const todayEnd = tomorrowLocal.toISOString();
       
-      console.log('Date range for today:', {
-        local: {
-          start: todayLocal.toString(),
-          end: tomorrowLocal.toString()
-        },
-        utc: {
-          start: todayStart,
-          end: todayEnd
-        }
-      });
-      
-      console.log('Fetching repos for user:', username, user?.hasToken ? '(authenticated)' : '(unauthenticated)');
       const reposResponse = await fetchGitHub(`users/${username}/repos?sort=updated&per_page=10`);
-      
-      console.log('Repos response status:', reposResponse.status);
       
       if (!reposResponse.ok) {
         if (reposResponse.status === 403) {

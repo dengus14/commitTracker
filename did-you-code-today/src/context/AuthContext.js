@@ -17,14 +17,14 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('auth_token'));
 
   useEffect(() => {
-    // Check for token in URL (from OAuth callback)
+    // check for token in url after oauth
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
     
     if (tokenFromUrl) {
       localStorage.setItem('auth_token', tokenFromUrl);
       setToken(tokenFromUrl);
-      // Remove token from URL
+      // clean up the url
       window.history.replaceState({}, document.title, window.location.pathname);
     }
     
@@ -57,14 +57,14 @@ export const AuthProvider = ({ children }) => {
           setUser(result.data);
           setIsAuthenticated(true);
         } else {
-          // Invalid token
+          // token is bad
           localStorage.removeItem('auth_token');
           setToken(null);
           setUser(null);
           setIsAuthenticated(false);
         }
       } else {
-        // Unauthorized or invalid token
+        // not authorized or bad token
         localStorage.removeItem('auth_token');
         setToken(null);
         setUser(null);

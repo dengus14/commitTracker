@@ -61,8 +61,6 @@ export const useStreakData = () => {
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
         const since = sixMonthsAgo.toISOString();
         
-        console.log(`Fetching commits for ${repo.full_name} since ${since}`);
-        
         const commitsResponse = await fetchGitHub(
           `repos/${repo.full_name}/commits?author=${username}&since=${since}&per_page=100`
         );
@@ -83,8 +81,6 @@ export const useStreakData = () => {
             
             commitDatesSet.add(localDateString);
           });
-          
-          console.log(`Found ${commits.length} commits in ${repo.name}`);
         } else {
           console.warn(`Could not fetch commits for ${repo.full_name}: ${commitsResponse.status}`);
         }
