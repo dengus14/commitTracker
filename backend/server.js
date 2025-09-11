@@ -16,7 +16,7 @@ const authRoutes = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 5003;
 
-// Initialize server after DB connection
+// start server after db connects
 const startServer = async () => {
   try {
     await connectDB();
@@ -44,7 +44,7 @@ const startServer = async () => {
       cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000, // cookie expires in 24 hours
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
       }
     }));
@@ -88,10 +88,10 @@ const startServer = async () => {
     });
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
+    console.error('failed to start server:', error.message);
     process.exit(1);
   }
 };
 
-// Start the server
+// start the server
 startServer();

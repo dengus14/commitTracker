@@ -4,7 +4,7 @@ const User = require('../models/User');
 const StreakData = require('../models/StreakData');
 const router = express.Router();
 
-// JWT verification middleware
+// check if jwt token is valid
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   
@@ -47,7 +47,7 @@ router.get('/user', verifyToken, async (req, res) => {
   }
 });
 
-// Authenticated GitHub API proxy endpoint
+// proxy for github api calls
 router.get('/github/*', verifyToken, async (req, res) => {
   try {
     if (!req.user.accessToken) {
@@ -57,7 +57,7 @@ router.get('/github/*', verifyToken, async (req, res) => {
       });
     }
 
-    // Extract the GitHub API path from the request
+    // get the github api path from url
     const githubPath = req.params[0];
     const queryString = req.url.split('?')[1] || '';
     const githubUrl = `https://api.github.com/${githubPath}${queryString ? '?' + queryString : ''}`;

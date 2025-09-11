@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
-// JWT verification middleware
+// check if jwt token is valid
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   
@@ -32,7 +32,7 @@ router.get('/github', passport.authenticate('github', {
 router.get('/github/callback', 
   passport.authenticate('github', { failureRedirect: '/login?error=auth_failed' }),
   (req, res) => {
-    // Generate JWT token
+    // make jwt token
     const token = jwt.sign(
       { 
         userId: req.user._id,
@@ -43,7 +43,7 @@ router.get('/github/callback',
       { expiresIn: '24h' }
     );
     
-    // Redirect to frontend with token as query parameter
+    // send user back to frontend with the token
     const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}?token=${token}`;
     res.redirect(redirectUrl);
   }

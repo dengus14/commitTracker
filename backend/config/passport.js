@@ -18,6 +18,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         return done(null, user);
       }
       
+      // create new user
       user = new User({
         githubId: profile.id,
         username: profile.username,
@@ -35,7 +36,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     }
   }));
 } else {
-  console.log('⚠️  GitHub OAuth credentials not configured. OAuth routes will not work.');
+  console.log('github oauth not configured');
 }
 
 passport.serializeUser((user, done) => {
