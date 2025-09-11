@@ -14,7 +14,7 @@ const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5003;
 
 // Initialize server after DB connection
 const startServer = async () => {
