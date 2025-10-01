@@ -24,12 +24,10 @@ const startServer = async () => {
     app.use(helmet());
     app.use(morgan('combined'));
     app.use(cors({
-      origin: [
-        process.env.CLIENT_URL || 'http://localhost:3000',
-        'https://committracker.onrender.com'
-      ],
-      credentials: true
-    }));
+    origin: process.env.CLIENT_URL.replace(/\/$/, ''), // removes trailing slash
+    credentials: true
+  }));
+
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
