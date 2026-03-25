@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { createFetchGitHub } from '../utils/githubApi';
 
 export const useLanguageStats = () => {
   const { user, token } = useAuth();
@@ -8,50 +9,13 @@ export const useLanguageStats = () => {
   const [error, setError] = useState('');
   const isLoadingRef = useRef(false);
 
-  const fetchGitHub = async (path) => {
-    if (user && user.hasToken && token) {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        return { 
-          ok: true, 
-          json: async () => result.data, 
-          status: response.status 
-        };
-      } else {
-        const errorResult = await response.json();
-        return { 
-          ok: false, 
-          status: response.status, 
-          json: async () => errorResult 
-        };
-      }
-    } else {
-      const response = await fetch(`https://api.github.com/${path}`);
-      return { 
-        ok: response.ok, 
-        json: () => response.json(), 
-        status: response.status 
-      };
-    }
-  };
-
-  
-
   const fetchLanguageStats = useCallback(async (username) => {
     if (!username) {
       setError('Please enter a GitHub username.');
       return;
     }
 
-    if (isLoadingRef.current) {
-      return; 
-    }
+    if (isLoadingRef.current) return;
 
     isLoadingRef.current = true;
     setLoading(true);
@@ -59,28 +23,43 @@ export const useLanguageStats = () => {
     setLanguageData(null);
 
     try {
-      console.log('Fetching repos for user:', username);
-      
+      // Use cached backend endpoint when authenticated
+      if (user && user.hasToken && token) {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/languages/${username}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          setLanguageData(result.data);
+          isLoadingRef.current = false;
+          setLoading(false);
+          return;
+        }
+        // fall through to direct approach on error
+      }
+
+      // Unauthenticated fallback: sequential direct GitHub API calls
+      const fetchGitHub = createFetchGitHub(user, token);
+
       const reposResponse = await fetchGitHub(`users/${username}/repos?per_page=100&sort=updated`);
-      
+
       if (!reposResponse.ok) {
         if (reposResponse.status === 403) {
           setError('GitHub API rate limit exceeded. Please try again later or login with GitHub.');
-          isLoadingRef.current = false;
-          setLoading(false);
-          return;
-        }
-        if (reposResponse.status === 404) {
+        } else if (reposResponse.status === 404) {
           setError('User not found. Please check the username.');
-          isLoadingRef.current = false;
-          setLoading(false);
-          return;
+        } else {
+          throw new Error(`GitHub API error: ${reposResponse.status}`);
         }
-        throw new Error(`GitHub API error: ${reposResponse.status}`);
+        isLoadingRef.current = false;
+        setLoading(false);
+        return;
       }
-      
+
       const repos = await reposResponse.json();
-      
+
       if (!Array.isArray(repos) || repos.length === 0) {
         setError('No repositories found for this user.');
         isLoadingRef.current = false;
@@ -94,15 +73,14 @@ export const useLanguageStats = () => {
       for (const repo of repos) {
         try {
           const languagesResponse = await fetchGitHub(`repos/${repo.full_name}/languages`);
-          
+
           if (languagesResponse.status === 403) {
             setError('GitHub API rate limit reached. Showing partial results.');
             break;
           }
-          
+
           if (languagesResponse.ok) {
             const languages = await languagesResponse.json();
-            
             Object.entries(languages).forEach(([language, bytes]) => {
               languageTotals[language] = (languageTotals[language] || 0) + bytes;
               totalBytes += bytes;
@@ -116,39 +94,32 @@ export const useLanguageStats = () => {
       const languageArray = Object.entries(languageTotals)
         .map(([language, bytes]) => ({
           name: language,
-          bytes: bytes,
+          bytes,
           percentage: ((bytes / totalBytes) * 100).toFixed(1)
         }))
-        .sort((a, b) => b.bytes - a.bytes); 
+        .sort((a, b) => b.bytes - a.bytes);
 
       setLanguageData({
         languages: languageArray,
-        totalBytes: totalBytes,
+        totalBytes,
         reposChecked: repos.length
       });
-      
-    } catch (error) {
-      console.error('API Error:', error);
-      
-      if (error.message.includes('403')) {
+
+    } catch (err) {
+      if (err.message.includes('403')) {
         setError('GitHub API rate limit exceeded. Please login with GitHub or try again later.');
-      } else if (error.message.includes('404')) {
+      } else if (err.message.includes('404')) {
         setError('User not found. Please check the username.');
-      } else if (error.message.includes('Failed to fetch')) {
+      } else if (err.message.includes('Failed to fetch')) {
         setError('Network error. Please check your internet connection.');
       } else {
-        setError(`Error: ${error.message}`);
+        setError(`Error: ${err.message}`);
       }
     }
 
     isLoadingRef.current = false;
     setLoading(false);
-  }, []);
+  }, [user, token]);
 
-  return {
-    loading,
-    languageData,
-    error,
-    fetchLanguageStats
-  };
+  return { loading, languageData, error, fetchLanguageStats };
 };

@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import MiniCalendar from "./components/MiniCalendar";
 import LanguageStats from "./components/LanguageStats";
 import StreakDisplay from "./components/StreakDisplay";
+import ThemeToggle from "./components/ThemeToggle";
 import { useCommitData } from "./hooks/useCommitData";
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
       <header className="app-header">
         <h1 className="title">Commit Tracker</h1>
         <div className="header-actions">
+          <ThemeToggle />
           {isAuthenticated && user && (
             <button
               onClick={logout}

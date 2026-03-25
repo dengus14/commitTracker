@@ -837,17 +837,33 @@ code {
   cursor: default;
 }
 
-.calendar-day.has-commits {
-  background: var(--success-subtle);
+.calendar-day.commits-level-1 {
+  background: rgba(63, 185, 80, 0.15);
   color: var(--success);
   font-weight: 500;
 }
 
-.calendar-day.has-commits:hover {
-  opacity: 0.8;
+.calendar-day.commits-level-2 {
+  background: rgba(63, 185, 80, 0.35);
+  color: var(--success);
+  font-weight: 500;
 }
 
-.calendar-day.today.has-commits {
+.calendar-day.commits-level-3 {
+  background: rgba(63, 185, 80, 0.65);
+  color: #fff;
+  font-weight: 600;
+}
+
+.calendar-day.commits-level-1:hover,
+.calendar-day.commits-level-2:hover,
+.calendar-day.commits-level-3:hover {
+  opacity: 0.85;
+}
+
+.calendar-day.today.commits-level-1,
+.calendar-day.today.commits-level-2,
+.calendar-day.today.commits-level-3 {
   background: var(--accent);
   color: #fff;
   box-shadow: 0 0 0 2px var(--success);
@@ -856,16 +872,6 @@ code {
 .day-number {
   position: relative;
   z-index: 1;
-}
-
-.commit-indicator {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
-  background: var(--success);
-  border-radius: 50%;
 }
 
 .calendar-loading {
@@ -1232,12 +1238,66 @@ code {
   height: 16px;
 }
 
-/* ─── Weekly Summary (if used) ───────────────────────────────────────────── */
-.weekly-summary {
-  background: var(--bg-surface);
+/* ─── Activity Feed ──────────────────────────────────────────────────────── */
+.activity-feed {
+  margin-top: var(--space-4);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
+}
+
+.activity-feed-title {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.activity-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.activity-icon-green { color: var(--success); }
+.activity-icon-blue  { color: var(--accent); }
+.activity-icon-purple { color: #a78bfa; }
+.activity-icon-yellow { color: var(--warning); }
+
+.activity-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-time {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
@@ -1251,7 +1311,7 @@ code {
   }
 
   .sidebar {
-    display: none;
+    width: 100%;
   }
 
   .footer-content {

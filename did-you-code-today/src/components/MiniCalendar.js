@@ -1,75 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useCalendarCommitData } from '../hooks/useCalendarCommitData';
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 
 const MiniCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { hasCommitOnDate, fetchCommitDatesForMonth, loading } = useCalendarCommitData();
-  
-  // Get current month and year
+  const { getCommitCount, fetchCommitDatesForMonth, loading } = useCalendarCommitData();
+
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   const today = new Date();
-  
-  // Fetch commit data when month changes
+
   useEffect(() => {
     fetchCommitDatesForMonth(currentYear, currentMonth);
   }, [currentYear, currentMonth, fetchCommitDatesForMonth]);
-  
-  // Get first day of month and number of days
+
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
   const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
   const startingDayOfWeek = firstDayOfMonth.getDay();
   const daysInMonth = lastDayOfMonth.getDate();
-  
-  // Month names
+
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  
-  // Day names
+
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  
-  // Generate calendar days
+
   const calendarDays = [];
-  
-  // Empty cells for days before month starts
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    calendarDays.push(null);
-  }
-  
-  // Days of the month
-  for (let day = 1; day <= daysInMonth; day++) {
-    calendarDays.push(day);
-  }
-  
-  // Navigation functions
-  const goToPreviousMonth = () => {
-    setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+  for (let i = 0; i < startingDayOfWeek; i++) calendarDays.push(null);
+  for (let day = 1; day <= daysInMonth; day++) calendarDays.push(day);
+
+  const goToPreviousMonth = () => setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+  const goToNextMonth = () => setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+
+  const isToday = (day) =>
+    day &&
+    day === today.getDate() &&
+    currentMonth === today.getMonth() &&
+    currentYear === today.getFullYear();
+
+  const getIntensityClass = (day) => {
+    if (!day) return '';
+    const count = getCommitCount(new Date(currentYear, currentMonth, day));
+    if (count === 0) return '';
+    if (count <= 2) return 'commits-level-1';
+    if (count <= 5) return 'commits-level-2';
+    return 'commits-level-3';
   };
-  
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+
+  const getTooltip = (day) => {
+    if (!day) return undefined;
+    const count = getCommitCount(new Date(currentYear, currentMonth, day));
+    if (count === 0) return undefined;
+    const monthName = monthNames[currentMonth];
+    return `${count} commit${count !== 1 ? 's' : ''} on ${monthName} ${day}`;
   };
-  
-  // Check if a day is today
-  const isToday = (day) => {
-    if (!day) return false;
-    return (
-      day === today.getDate() &&
-      currentMonth === today.getMonth() &&
-      currentYear === today.getFullYear()
-    );
-  };
-  
-  // Check if a day has commits
-  const hasCommitsOnDay = (day) => {
-    if (!day) return false;
-    const date = new Date(currentYear, currentMonth, day);
-    return hasCommitOnDate(date);
-  };
-  
+
   return (
     <div className="mini-calendar">
       <div className="calendar-header">
@@ -93,35 +79,31 @@ const MiniCalendar = () => {
           <LuChevronRight size={14} />
         </button>
       </div>
-      
+
       <div className="calendar-weekdays">
         {dayNames.map(day => (
-          <div key={day} className="calendar-weekday">
-            {day}
-          </div>
+          <div key={day} className="calendar-weekday">{day}</div>
         ))}
       </div>
-      
+
       <div className="calendar-days">
-        {calendarDays.map((day, index) => (
-          <div 
-            key={index} 
-            className={`calendar-day ${day ? 'has-day' : 'empty-day'} ${isToday(day) ? 'today' : ''} ${hasCommitsOnDay(day) ? 'has-commits' : ''}`}
-          >
-            {day && (
-              <>
-                <span className="day-number">{day}</span>
-                {hasCommitsOnDay(day) && <div className="commit-indicator"></div>}
-              </>
-            )}
-          </div>
-        ))}
+        {calendarDays.map((day, index) => {
+          const intensityClass = getIntensityClass(day);
+          const tooltip = getTooltip(day);
+          return (
+            <div
+              key={index}
+              className={`calendar-day ${day ? 'has-day' : 'empty-day'} ${isToday(day) ? 'today' : ''} ${intensityClass}`}
+              title={tooltip}
+            >
+              {day && <span className="day-number">{day}</span>}
+            </div>
+          );
+        })}
       </div>
-      
+
       {loading && (
-        <div className="calendar-loading">
-          Loading commits...
-        </div>
+        <div className="calendar-loading">Loading commits...</div>
       )}
     </div>
   );

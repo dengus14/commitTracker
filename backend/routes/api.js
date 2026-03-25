@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const StreakData = require('../models/StreakData');
+const LanguageCache = require('../models/LanguageCache');
 const router = express.Router();
 
 // check if jwt token is valid
@@ -369,6 +370,78 @@ router.post('/streak/:username/refresh', verifyToken, async (req, res) => {
       message: 'Error refreshing streak',
       error: error.message
     });
+  }
+});
+
+router.get('/languages/:username', verifyToken, async (req, res) => {
+  try {
+    const { username } = req.params;
+    const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+    const cached = await LanguageCache.findOne({ githubUsername: username });
+    if (cached && (Date.now() - cached.lastCalculated.getTime()) < CACHE_DURATION) {
+      return res.json({
+        success: true,
+        data: {
+          languages: cached.languages,
+          totalBytes: cached.totalBytes,
+          reposChecked: cached.reposChecked,
+          cached: true
+        }
+      });
+    }
+
+    if (!req.user.accessToken) {
+      return res.status(401).json({ success: false, message: 'GitHub token required' });
+    }
+
+    const repos = await fetchGitHubData(
+      `users/${username}/repos?per_page=100&sort=updated`,
+      req.user.accessToken
+    );
+
+    if (!Array.isArray(repos) || repos.length === 0) {
+      return res.json({ success: true, data: { languages: [], totalBytes: 0, reposChecked: 0 } });
+    }
+
+    const languageTotals = {};
+    let totalBytes = 0;
+
+    const results = await Promise.allSettled(
+      repos.map(repo =>
+        fetchGitHubData(`repos/${repo.full_name}/languages`, req.user.accessToken)
+      )
+    );
+
+    results.forEach(result => {
+      if (result.status === 'fulfilled') {
+        Object.entries(result.value).forEach(([lang, bytes]) => {
+          languageTotals[lang] = (languageTotals[lang] || 0) + bytes;
+          totalBytes += bytes;
+        });
+      }
+    });
+
+    const languages = Object.entries(languageTotals)
+      .map(([name, bytes]) => ({
+        name,
+        bytes,
+        percentage: ((bytes / totalBytes) * 100).toFixed(1)
+      }))
+      .sort((a, b) => b.bytes - a.bytes);
+
+    await LanguageCache.findOneAndUpdate(
+      { githubUsername: username },
+      { githubUsername: username, languages, totalBytes, reposChecked: repos.length, lastCalculated: new Date() },
+      { upsert: true, new: true }
+    );
+
+    res.json({
+      success: true,
+      data: { languages, totalBytes, reposChecked: repos.length, cached: false }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching language stats', error: error.message });
   }
 });
 

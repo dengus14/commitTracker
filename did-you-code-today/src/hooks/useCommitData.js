@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { createFetchGitHub } from '../utils/githubApi';
 
 export const useCommitData = () => {
   const { user, token } = useAuth();
@@ -7,39 +8,6 @@ export const useCommitData = () => {
   const [status, setStatus] = useState('');
   const [commitStats, setCommitStats] = useState(null);
   const isLoadingRef = useRef(false);
-
-  const fetchGitHub = async (path) => {
-    if (user && user.hasToken && token) {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/github/${path}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        return { 
-          ok: true, 
-          json: async () => result.data, 
-          status: response.status 
-        };
-      } else {
-        const errorResult = await response.json();
-        return { 
-          ok: false, 
-          status: response.status, 
-          json: async () => errorResult 
-        };
-      }
-    } else {
-      const response = await fetch(`https://api.github.com/${path}`);
-      return { 
-        ok: response.ok, 
-        json: () => response.json(), 
-        status: response.status 
-      };
-    }
-  };
 
   const getStatusClass = () => {
     if (loading) return 'loading';
@@ -63,6 +31,8 @@ export const useCommitData = () => {
     setLoading(true);
     setStatus('');
     setCommitStats(null);
+
+    const fetchGitHub = createFetchGitHub(user, token);
 
     try {
       // get today's date in local time
@@ -175,17 +145,20 @@ export const useCommitData = () => {
         console.warn('Could not fetch recent commits:', recentError);
       }
 
-      let eventsData = { totalEvents: 0, pushEvents: 0 };
+      let rawEvents = [];
+      let thisWeekCount = 0;
       try {
-        const eventsResponse = await fetchGitHub(
-          `users/${username}/events/public`
-        );
-        
+        const eventsResponse = await fetchGitHub(`users/${username}/events/public`);
+
         if (eventsResponse.ok) {
           const events = await eventsResponse.json();
           if (Array.isArray(events)) {
-            eventsData.totalEvents = events.length;
-            eventsData.pushEvents = events.filter(e => e.type === 'PushEvent').length;
+            rawEvents = events;
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            thisWeekCount = events
+              .filter(e => e.type === 'PushEvent' && new Date(e.created_at) >= sevenDaysAgo)
+              .reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
           }
         }
       } catch (eventsError) {
@@ -195,13 +168,11 @@ export const useCommitData = () => {
       setCommitStats({
         todayCount: totalTodayCommits,
         todayRepos: reposWithCommitsToday,
-        totalRecentEvents: eventsData.pushEvents,
-        totalRepos: Math.min(repos.length, 3), 
+        thisWeekCount,
         lastCommit: mostRecentCommit,
+        events: rawEvents,
         apiInfo: {
-          totalEvents: eventsData.totalEvents,
-          pushEvents: eventsData.pushEvents,
-          reposChecked: Math.min(repos.length, 3) 
+          reposChecked: Math.min(repos.length, 3)
         }
       });
 
