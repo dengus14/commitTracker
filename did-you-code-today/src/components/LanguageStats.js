@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguageStats } from '../hooks/useLanguageStats';
+import { LuChartBar, LuFolderOpen, LuRefreshCw } from 'react-icons/lu';
 
 const LanguageStats = () => {
   const { user } = useAuth();
@@ -67,7 +68,7 @@ const LanguageStats = () => {
     return (
       <div className="language-stats">
         <div className="language-stats-header">
-          <h3>📊 Language Statistics</h3>
+          <h3><LuChartBar size={13} /> Language Statistics</h3>
         </div>
         <div className="language-stats-loading">
           <div className="loading-spinner"></div>
@@ -81,7 +82,7 @@ const LanguageStats = () => {
     return (
       <div className="language-stats">
         <div className="language-stats-header">
-          <h3>📊 Language Statistics</h3>
+          <h3><LuChartBar size={13} /> Language Statistics</h3>
         </div>
         <div className="language-stats-error">
           <p>⚠️ {error}</p>
@@ -94,7 +95,7 @@ const LanguageStats = () => {
     return (
       <div className="language-stats">
         <div className="language-stats-header">
-          <h3>📊 Language Statistics</h3>
+          <h3><LuChartBar size={13} /> Language Statistics</h3>
         </div>
         <div className="language-stats-empty">
           <p>No language data available</p>
@@ -106,7 +107,7 @@ const LanguageStats = () => {
   return (
     <div className="language-stats">
       <div className="language-stats-header">
-        <h3>📊 Language Statistics</h3>
+        <h3><LuChartBar size={13} /> Language Statistics</h3>
         <div className="stats-summary">
           <span className="total-languages">{languageData.languages.length} languages</span>
           <span className="total-size">{formatBytes(languageData.totalBytes)}</span>
@@ -144,15 +145,15 @@ const LanguageStats = () => {
 
       <div className="language-stats-footer">
         <small>
-          📁 Data from {languageData.reposChecked} repositories
+          <LuFolderOpen size={11} /> {languageData.reposChecked} repositories
         </small>
         {user && (
-          <button 
+          <button
             className="refresh-languages-btn"
             onClick={() => fetchLanguageStats(user.username)}
             disabled={loading}
           >
-            🔄 Refresh
+            <LuRefreshCw size={10} /> Refresh
           </button>
         )}
       </div>

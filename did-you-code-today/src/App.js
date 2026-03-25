@@ -22,7 +22,7 @@ function App() {
       <div className="app-container">
         <div className="main-card">
           <div className="auth-loading">
-            <h2>🔍 Checking authentication...</h2>
+            <h2>Checking authentication...</h2>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@ function App() {
         <h1 className="title">Commit Tracker</h1>
         <div className="header-actions">
           {isAuthenticated && user && (
-            <button 
+            <button
               onClick={logout}
               className="header-logout-button"
             >
@@ -44,41 +44,37 @@ function App() {
           )}
         </div>
       </header>
-      
-      <div className="content-with-sidebar">
-        <div className="main-content">
+
+      {isAuthenticated && user ? (
+        // Authenticated: two-column layout with sidebar
+        <div className="content-with-sidebar">
+          <div className="main-content">
+            <div className="main-card">
+              <Dashboard />
+            </div>
+          </div>
+          <div className="sidebar">
+            <MiniCalendar />
+            <LanguageStats />
+            <StreakDisplay />
+          </div>
+        </div>
+      ) : (
+        // Unauthenticated: centered single-column layout, no empty sidebar
+        <div className="unauth-layout">
           <div className="main-card">
             <p className="subtitle">
               Track your daily coding activity on GitHub
             </p>
-            
-            {isAuthenticated && user ? (
-              // Authenticated user dashboard with side drawer
-              <Dashboard />
-            ) : (
-              // Non-authenticated user flow
-              <>
-                <GitHubAuth />
-                
-                <Divider text="or check manually" />
-                
-                <CommitChecker onCheck={checkCommits} loading={loading} />
-                
-                <StatusMessage status={status} loading={loading} />
-                
-                <CommitStats commitStats={commitStats} loading={loading} />
-              </>
-            )}
+            <GitHubAuth />
+            <Divider text="or check manually" />
+            <CommitChecker onCheck={checkCommits} loading={loading} />
+            <StatusMessage status={status} loading={loading} />
+            <CommitStats commitStats={commitStats} loading={loading} />
           </div>
         </div>
-        
-        <div className="sidebar">
-          <MiniCalendar />
-          <LanguageStats />
-          <StreakDisplay />
-        </div>
-      </div>
-      
+      )}
+
       <Footer />
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useStreakData } from '../hooks/useStreakDataPersisted';
-import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaQuestionCircle } from 'react-icons/fa';
+import { LuFlame, LuTrophy, LuCircleCheck, LuTriangleAlert, LuCircleX, LuCircleHelp, LuRefreshCw } from 'react-icons/lu';
 
 const StreakDisplay = () => {
   const { user } = useAuth();
@@ -12,15 +12,6 @@ const StreakDisplay = () => {
       calculateStreak(user.username);
     }
   }, [user, calculateStreak]);
-
-  const getStreakEmoji = (streak) => {
-    if (streak === 0) return '😴';
-    if (streak < 3) return '🔥';
-    if (streak < 7) return '🚀';
-    if (streak < 30) return '💪';
-    if (streak < 100) return '🏆';
-    return '👑';
-  };
 
   const getStreakMessage = (current, longest) => {
     if (current === 0 && longest === 0) {
@@ -55,7 +46,7 @@ const StreakDisplay = () => {
     return {
       text: "No commit data found",
       color: "gray",
-      icon: FaQuestionCircle
+      icon: LuCircleHelp
     }
   }
 
@@ -64,42 +55,27 @@ const StreakDisplay = () => {
   const diffTime = Math.abs(todayDate - commitDate)
   const days = Math.floor(diffTime / 86400000)
 
-  if (days === 0){
-    return {
-      text: " Today",
-      color: "green", 
-      icon: FaCheckCircle
-    }
-  }
-  else if(days === 1){
-    return {
-      text: " Yesterday",
-      color: "green",
-      icon: FaCheckCircle
-    }
-  }
-  else if (days > 1 && days <= 3){
-    return {
-      text: `${days} days ago`,
-      color: "yellow",
-      icon: FaExclamationTriangle
-    }
-  }
-  else {
-    return {
-      text: `${days} days ago`,
-      color: "red",
-      icon: FaTimesCircle
-    }
+  if (days === 0) {
+    return { text: "Today",            color: "green",  icon: LuCircleCheck }
+  } else if (days === 1) {
+    return { text: "Yesterday",        color: "green",  icon: LuCircleCheck }
+  } else if (days <= 3) {
+    return { text: `${days} days ago`, color: "yellow", icon: LuTriangleAlert }
+  } else {
+    return { text: `${days} days ago`, color: "red",    icon: LuCircleX }
   }
 }
+
+  const StreakHeader = () => (
+    <div className="language-stats-header">
+      <h3><LuFlame size={13} /> Coding Streak</h3>
+    </div>
+  );
 
   if (loading) {
     return (
       <div className="language-stats">
-        <div className="language-stats-header">
-          <h3>🔥 Coding Streak</h3>
-        </div>
+        <StreakHeader />
         <div className="language-stats-loading">
           <div className="loading-spinner"></div>
           <p>Calculating your streak...</p>
@@ -111,11 +87,9 @@ const StreakDisplay = () => {
   if (error) {
     return (
       <div className="language-stats">
-        <div className="language-stats-header">
-          <h3>🔥 Coding Streak</h3>
-        </div>
+        <StreakHeader />
         <div className="language-stats-error">
-          <p>⚠️ {error}</p>
+          <p>{error}</p>
         </div>
       </div>
     );
@@ -124,9 +98,7 @@ const StreakDisplay = () => {
   if (!streakData) {
     return (
       <div className="language-stats">
-        <div className="language-stats-header">
-          <h3>🔥 Coding Streak</h3>
-        </div>
+        <StreakHeader />
         <div className="language-stats-empty">
           <p>No streak data available</p>
         </div>
@@ -142,52 +114,47 @@ const StreakDisplay = () => {
 
   return (
     <div className="language-stats">
-      <div className="language-stats-header">
-        <h3>🔥 Coding Streak</h3>
-      </div>
+      <StreakHeader />
 
       <div className="streak-main-display">
         <div className="streak-current">
           <div className="streak-number">
-            <span className="streak-emoji">{getStreakEmoji(currentStreak)}</span>
+            <LuFlame size={18} className="streak-icon" />
             <span className="streak-count">{currentStreak}</span>
           </div>
-          <div className="streak-label">
-            {currentStreak === 1 ? 'day' : 'days'} current
-          </div>
+          <div className="streak-label">current streak</div>
         </div>
 
         <div className="streak-divider"></div>
 
         <div className="streak-longest">
           <div className="streak-number">
-            <span className="streak-emoji">🏆</span>
+            <LuTrophy size={18} className="streak-trophy" />
             <span className="streak-count">{longestStreak}</span>
           </div>
-          <div className="streak-label">
-            {longestStreak === 1 ? 'day' : 'days'} longest
-          </div>
+          <div className="streak-label">longest streak</div>
         </div>
       </div>
 
       <div className="streak-message">
         <p>{getStreakMessage(currentStreak, longestStreak)}</p>
       </div>
+
       {badgeInfo && (
-      <div className={`commit-badge commit-badge-${badgeInfo.color}`}>
-        <badgeInfo.icon size={16} />
-        <span>Last commit: {badgeInfo.text}</span>
-      </div>
+        <div className={`commit-badge commit-badge-${badgeInfo.color}`}>
+          <badgeInfo.icon size={13} />
+          <span>Last commit: {badgeInfo.text}</span>
+        </div>
       )}
 
       <div className="language-stats-footer">
         {user && (
-          <button 
+          <button
             className="refresh-languages-btn"
             onClick={() => refreshStreak(user.username)}
             disabled={loading}
           >
-            🔄 Refresh
+            <LuRefreshCw size={10} /> Refresh
           </button>
         )}
       </div>

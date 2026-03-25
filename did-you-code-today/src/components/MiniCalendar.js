@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCalendarCommitData } from '../hooks/useCalendarCommitData';
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 
 const MiniCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -72,24 +73,24 @@ const MiniCalendar = () => {
   return (
     <div className="mini-calendar">
       <div className="calendar-header">
-        <button 
-          className="calendar-nav-btn" 
+        <button
+          className="calendar-nav-btn"
           onClick={goToPreviousMonth}
           aria-label="Previous month"
           disabled={loading}
         >
-          ‹
+          <LuChevronLeft size={14} />
         </button>
         <h3 className="calendar-title">
           {monthNames[currentMonth]} {currentYear}
         </h3>
-        <button 
-          className="calendar-nav-btn" 
+        <button
+          className="calendar-nav-btn"
           onClick={goToNextMonth}
           aria-label="Next month"
           disabled={loading}
         >
-          ›
+          <LuChevronRight size={14} />
         </button>
       </div>
       
