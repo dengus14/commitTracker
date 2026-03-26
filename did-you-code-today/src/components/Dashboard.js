@@ -2,15 +2,16 @@ import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useCommitData } from "../hooks/useCommitData";
 import { useStreakData } from "../hooks/useStreakDataPersisted";
+import { useAchievements } from "../context/AchievementContext";
 import UserProfile from "./UserProfile";
-import StatusMessage from "./StatusMessage";
 import CommitStats from "./CommitStats";
 import ActivityFeed from "./ActivityFeed";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { loading, status, commitStats, checkCommits } = useCommitData();
+  const { loading, commitStats, checkCommits } = useCommitData();
   const { streakData, calculateStreak } = useStreakData();
+  const { provideCommitStats } = useAchievements();
 
   useEffect(() => {
     if (user && user.username) {
@@ -18,6 +19,10 @@ const Dashboard = () => {
       calculateStreak(user.username);
     }
   }, [user, checkCommits, calculateStreak]);
+
+  useEffect(() => {
+    if (commitStats) provideCommitStats(commitStats);
+  }, [commitStats, provideCommitStats]);
 
   const getCustomMessage = () => {
     if (loading) return "Checking your activity...";
