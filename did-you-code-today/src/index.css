@@ -1985,6 +1985,268 @@ code {
   flex-shrink: 0;
 }
 
+/* ── Share Profile Button ──────────────────────────────────────────────────── */
+.share-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 34px;
+  border-radius: 20px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease,
+    transform 150ms ease;
+}
+
+.share-profile-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 200% center;
+  transition: background-position 500ms ease;
+  pointer-events: none;
+}
+
+.share-profile-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  transform: translateY(-1px);
+}
+
+.share-profile-btn:hover::before {
+  background-position: -200% center;
+}
+
+.share-profile-btn:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+/* ── Commit Chart ──────────────────────────────────────────────────────────── */
+.commit-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commit-chart-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.commit-chart-meta-item strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.commit-chart-meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.commit-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 120px;
+  position: relative;
+}
+
+.commit-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+  cursor: default;
+}
+
+/* Tooltip */
+.commit-chart-tooltip {
+  position: absolute;
+  bottom: calc(100% - 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-tooltip, #1e2535);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
+}
+.commit-chart-tooltip.left {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.commit-chart-tooltip-date {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.commit-chart-tooltip-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Bar track fills the column height above the label */
+.commit-chart-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.commit-chart-bar {
+  width: 100%;
+  max-width: 20px;
+  border-radius: 3px 3px 2px 2px;
+  background: var(--accent);
+  opacity: 0.75;
+  height: var(--bar-height, 0%);
+  min-height: 0;
+  transform-origin: bottom;
+  animation: barGrow 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: var(--animation-delay, 0ms);
+  transition: opacity 150ms ease, background 150ms ease;
+}
+
+.commit-chart-bar.empty {
+  height: 3px;
+  background: var(--border);
+  opacity: 0.5;
+  border-radius: 2px;
+  animation: none;
+}
+
+.commit-chart-bar.today {
+  background: var(--success);
+  opacity: 0.9;
+}
+
+.commit-chart-bar.active,
+.commit-chart-col:hover .commit-chart-bar:not(.empty) {
+  opacity: 1;
+  background: var(--accent-hover, var(--accent));
+}
+
+.commit-chart-col:hover .commit-chart-bar.today {
+  background: var(--success);
+}
+
+/* Label above the bar (only on days with commits) */
+.commit-chart-top-label {
+  position: absolute;
+  bottom: calc(var(--bar-h, 8%) + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1;
+}
+.commit-chart-top-label.today {
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* Loading skeleton */
+.commit-chart-skeleton {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 88px;
+}
+@keyframes shimmer {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+.commit-chart-skeleton-bar {
+  flex: 1;
+  background: var(--border);
+  border-radius: 3px 3px 2px 2px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* ── Streak inline row (inside chart panel) ─────────────────────────────────── */
+.streak-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.streak-inline-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.streak-inline-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.streak-inline-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.streak-inline-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+
+.streak-inline-best {
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 600;
+}
+
 .header-icon-btn {
   width: 38px;
   height: 38px;
@@ -2101,9 +2363,19 @@ code {
 /* ─── Content Grid (2/3 + 1/3) ─────────────────────────────────────────────── */
 .content-grid-21 {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
   align-items: start;
+}
+
+/* Activity feed stays compact */
+.activity-feed-panel {
+  min-width: 0;
+}
+
+/* Chart panel is the dominant one */
+.commit-chart-panel {
+  min-width: 0;
 }
 
 /* ─── Panel Card ────────────────────────────────────────────────────────────── */
@@ -2309,4 +2581,563 @@ code {
   .dashboard-page  { padding: 0 16px 24px; }
   .section-page    { padding: 0 16px 24px; }
   .app-page-title  { font-size: 22px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Public Profile Page  /u/:username
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.profile-page {
+  min-height: 100dvh;
+  background: var(--bg-base);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Decorative background blobs ── */
+.profile-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.profile-blob-1 {
+  width: 500px;
+  height: 500px;
+  background: rgba(47, 129, 247, 0.08);
+  top: -100px;
+  right: -100px;
+  animation: blobDrift1 14s ease-in-out infinite alternate;
+}
+
+.profile-blob-2 {
+  width: 400px;
+  height: 400px;
+  background: rgba(63, 185, 80, 0.06);
+  bottom: -80px;
+  left: -80px;
+  animation: blobDrift2 18s ease-in-out infinite alternate;
+}
+
+@keyframes blobDrift1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 60px) scale(1.1); }
+}
+
+@keyframes blobDrift2 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-30px, -50px) scale(1.08); }
+}
+
+/* ── Card ── */
+.profile-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-card--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Sections ── */
+.profile-section {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+/* ── Hero ── */
+.profile-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Avatar with animated ring */
+.profile-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+}
+
+.profile-avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--accent),
+    var(--success),
+    var(--accent),
+    var(--success),
+    var(--accent)
+  );
+  animation: ringRotate 4s linear infinite;
+}
+
+.profile-avatar-ring::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+}
+
+@keyframes ringRotate {
+  to { transform: rotate(360deg); }
+}
+
+.profile-avatar-img {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.profile-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.profile-gh-link {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.profile-gh-link:hover { color: var(--accent); }
+
+.profile-login {
+  margin: 3px 0 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.profile-bio {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.profile-location {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.profile-actions {
+  display: flex;
+  align-items: flex-start;
+  margin-left: auto;
+}
+
+/* ── Copy / Share button ── */
+.profile-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.profile-copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(47,129,247,0.08);
+}
+
+/* ── Stats row ── */
+.profile-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.profile-stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.profile-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.profile-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-subtle);
+  flex-shrink: 0;
+}
+
+/* ── Languages ── */
+.profile-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-lang-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+  border-radius: 99px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.profile-lang-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Repos grid ── */
+.profile-repos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.profile-repo-card {
+  display: block;
+  text-decoration: none;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: profileFadeUp 0.4s ease both;
+}
+
+.profile-repo-card:hover {
+  border-color: var(--border);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.profile-repo-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-repo-desc {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.profile-repo-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.profile-repo-lang {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.profile-repo-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ── Activity feed ── */
+.profile-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: profileFadeUp 0.4s ease both;
+}
+
+.profile-activity-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.profile-activity-text {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-activity-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Footer CTA ── */
+.profile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 4px;
+}
+
+.profile-footer-text {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.profile-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.profile-cta-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* ── Loading skeleton ── */
+.profile-loading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 620px;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-avatar-skeleton {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--bg-overlay);
+  flex-shrink: 0;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.profile-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-skeleton-line {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--bg-overlay);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.profile-skeleton-line.wide   { width: 70%; }
+.profile-skeleton-line.medium { width: 45%; animation-delay: 0.1s; }
+.profile-skeleton-line.narrow { width: 30%; animation-delay: 0.2s; }
+
+@keyframes shimmer {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* ── Error card ── */
+.profile-error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-error-emoji { font-size: 2.5rem; }
+
+.profile-error-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.profile-error-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ── Shared icon classes (reuse app tokens) ── */
+.profile-page .icon-blue   { background: rgba(47,129,247,0.12);  color: var(--accent); }
+.profile-page .icon-green  { background: rgba(63,185,80,0.12);   color: var(--success); }
+.profile-page .icon-purple { background: rgba(168,85,247,0.12);  color: #a855f7; }
+
+/* ── Entrance animation ── */
+@keyframes profileFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .profile-card      { padding: 24px 18px; border-radius: 16px; }
+  .profile-repos     { grid-template-columns: 1fr; }
+  .profile-hero      { flex-direction: column; }
+  .profile-actions   { margin-left: 0; }
+  .profile-name      { font-size: 1.2rem; }
+  .profile-stat-value { font-size: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-avatar-ring   { animation: none; }
+  .profile-blob          { animation: none; }
+  .profile-card          { transition: none; }
+  .profile-repo-card     { transition: none; }
 }

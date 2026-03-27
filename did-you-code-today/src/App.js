@@ -17,11 +17,13 @@ import LanguageStats from "./components/LanguageStats";
 import StreakDisplay from "./components/StreakDisplay";
 import Achievements from "./components/Achievements";
 import ThemeToggle from "./components/ThemeToggle";
+import CommitChart from "./components/CommitChart";
+import { useCommitChart } from "./hooks/useCommitChart";
 import {
   LuHouse, LuCalendar, LuChartBar, LuFlame, LuTrophy,
   LuLogOut, LuChevronsRight, LuChevronDown,
   LuGitCommitHorizontal, LuDatabase, LuCalendarDays,
-  LuTrendingUp, LuMoon, LuSun, LuRefreshCw, LuActivity,
+  LuTrendingUp, LuMoon, LuSun, LuRefreshCw, LuActivity, LuShare2, LuChartColumn,
 } from 'react-icons/lu';
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -138,7 +140,7 @@ const StatCard = ({ icon: Icon, iconClass, label, value, trend }) => (
 
 // ─── Dashboard View ───────────────────────────────────────────────────────────
 
-const DashboardView = ({ commitStats, loading, streakData, checkCommits, user }) => {
+const DashboardView = ({ commitStats, loading, streakData, checkCommits, user, chartDays, chartLoading }) => {
   const getMessage = () => {
     if (loading) return null;
     if (commitStats?.todayCount > 0)
@@ -201,8 +203,9 @@ const DashboardView = ({ commitStats, loading, streakData, checkCommits, user })
       {/* Content Grid */}
       {commitStats && !loading && (
         <div className="content-grid-21">
-          {/* Activity Feed */}
-          <div className="panel-card">
+
+          {/* Activity Feed — compact left column */}
+          <div className="panel-card activity-feed-panel">
             <div className="panel-card-header">
               <span className="panel-card-title">
                 <LuActivity size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
@@ -217,77 +220,47 @@ const DashboardView = ({ commitStats, loading, streakData, checkCommits, user })
                 Refresh
               </button>
             </div>
-            <ActivityFeed events={commitStats.events} />
+            <ActivityFeed events={commitStats.events} compact />
           </div>
 
-          {/* Right Panel */}
-          <div className="right-panel-stack">
-            {/* Streak mini */}
+          {/* Commit Chart — dominant right column */}
+          <div className="panel-card commit-chart-panel">
+            <div className="panel-card-header">
+              <span className="panel-card-title">
+                <LuChartColumn size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+                Last 30 Days
+              </span>
+              {commitStats.lastCommit && (
+                <span className="badge-today" style={{ opacity: 0.7, fontSize: 10 }}>
+                  {commitStats.lastCommit.isToday ? 'Active today' : `Last: ${commitStats.lastCommit.time}`}
+                </span>
+              )}
+            </div>
+            <CommitChart days={chartDays} loading={chartLoading} />
+
+            {/* Streak row inside chart panel */}
             {streakData && (
-              <div className="panel-card">
-                <div className="panel-card-header">
-                  <span className="panel-card-title">
-                    <LuFlame size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle', color: 'var(--warning)' }} />
-                    Streak
-                  </span>
+              <div className="streak-inline-row">
+                <div className="streak-inline-item">
+                  <LuFlame size={13} style={{ color: 'var(--warning)', flexShrink: 0 }} />
+                  <span className="streak-inline-value">{streakData.currentStreak}</span>
+                  <span className="streak-inline-label">day streak</span>
                 </div>
-                <div className="streak-mini-grid">
-                  <div className="streak-mini-item">
-                    <div className="streak-mini-value">{streakData.currentStreak}</div>
-                    <div className="streak-mini-label">Current</div>
-                  </div>
-                  <div className="streak-mini-divider" />
-                  <div className="streak-mini-item">
-                    <div className="streak-mini-value">{streakData.longestStreak}</div>
-                    <div className="streak-mini-label">Longest</div>
-                  </div>
+                <div className="streak-inline-sep" />
+                <div className="streak-inline-item">
+                  <span className="streak-inline-value">{streakData.longestStreak}</span>
+                  <span className="streak-inline-label">longest</span>
                 </div>
-                {streakData.longestStreak > 0 && streakData.currentStreak < streakData.longestStreak && (
-                  <p className="streak-mini-message">
-                    Keep going! Your record is {streakData.longestStreak} days.
-                  </p>
-                )}
                 {streakData.currentStreak > 0 && streakData.currentStreak === streakData.longestStreak && (
-                  <p className="streak-mini-message" style={{ color: 'var(--success)' }}>
-                    You're on your personal best!
-                  </p>
+                  <>
+                    <div className="streak-inline-sep" />
+                    <span className="streak-inline-best">Personal best!</span>
+                  </>
                 )}
               </div>
-            )}
-
-            {/* Last Commit */}
-            {commitStats.lastCommit && (
-              <div className="panel-card">
-                <div className="panel-card-header">
-                  <span className="panel-card-title">Last Commit</span>
-                  {commitStats.lastCommit.isToday && (
-                    <span className="badge-today">Today</span>
-                  )}
-                </div>
-                <div className="last-commit-card">
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {commitStats.lastCommit.repo}
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 11, marginLeft: 6 }}>
-                      #{commitStats.lastCommit.sha?.slice(0, 7)}
-                    </span>
-                  </div>
-                  <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text-secondary)' }}>
-                    "{commitStats.lastCommit.message}"
-                  </div>
-                  <div style={{ marginTop: 6, color: 'var(--text-muted)', fontSize: 11 }}>
-                    {commitStats.lastCommit.time}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* API info */}
-            {commitStats.apiInfo && (
-              <p className="api-disclaimer-mini">
-                Checking {commitStats.apiInfo.reposChecked} most active repos
-              </p>
             )}
           </div>
+
         </div>
       )}
     </div>
@@ -301,6 +274,7 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { loading, status, commitStats, checkCommits } = useCommitData();
   const { streakData, calculateStreak } = useStreakData();
+  const { days: chartDays, loading: chartLoading } = useCommitChart();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [navSelected, setNavSelected] = useState('dashboard');
 
@@ -356,6 +330,14 @@ function App() {
                 <p className="app-page-subtitle">{meta.subtitle}</p>
               </div>
               <div className="app-header-actions">
+                <a
+                  href={`/u/${user.username}`}
+                  className="share-profile-btn"
+                  aria-label="View public profile"
+                >
+                  <LuShare2 size={13} />
+                  <span>Share Profile</span>
+                </a>
                 <button className="header-icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
                   {theme === 'dark' ? <LuSun size={16} /> : <LuMoon size={16} />}
                 </button>
@@ -373,6 +355,8 @@ function App() {
                 streakData={streakData}
                 checkCommits={checkCommits}
                 user={user}
+                chartDays={chartDays}
+                chartLoading={chartLoading}
               />
             )}
             {navSelected === 'calendar' && (

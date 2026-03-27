@@ -151,8 +151,9 @@ const fetchGitHubData = async (path, accessToken) => {
 };
 
 const calculateStreakFromGitHub = async (username, accessToken) => {
-  const repos = await fetchGitHubData(`users/${username}/repos?sort=updated&per_page=20`, accessToken);
-  
+  // /user/repos includes private repos; /users/:username/repos only returns public ones
+  const repos = await fetchGitHubData(`user/repos?sort=updated&per_page=100&affiliation=owner`, accessToken);
+
   if (!Array.isArray(repos) || repos.length === 0) {
     return {
       currentStreak: 0,
@@ -163,25 +164,27 @@ const calculateStreakFromGitHub = async (username, accessToken) => {
   }
 
   const commitDatesSet = new Set();
-  const reposToCheck = repos.slice(0, 10);
-  
+  // Check up to 30 most-recently-updated repos (was 10, missing commits in older repos)
+  const reposToCheck = repos.slice(0, 30);
+
+  // Look back 18 months so streaks near the old 6-month boundary are not cut off
+  const lookbackDate = new Date();
+  lookbackDate.setMonth(lookbackDate.getMonth() - 18);
+  const since = lookbackDate.toISOString();
+
   for (const repo of reposToCheck) {
     try {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      const since = sixMonthsAgo.toISOString();
-      
       const commits = await fetchGitHubData(
         `repos/${repo.full_name}/commits?author=${username}&since=${since}&per_page=100`,
         accessToken
       );
-      
+
       commits.forEach(commit => {
         const commitDate = new Date(commit.commit.author.date);
-        const localDateString = commitDate.getFullYear() + '-' + 
-          String(commitDate.getMonth() + 1).padStart(2, '0') + '-' + 
+        const localDateString = commitDate.getFullYear() + '-' +
+          String(commitDate.getMonth() + 1).padStart(2, '0') + '-' +
           String(commitDate.getDate()).padStart(2, '0');
-        
+
         commitDatesSet.add(localDateString);
       });
     } catch (repoError) {
@@ -232,11 +235,12 @@ const calculateStreakFromGitHub = async (username, accessToken) => {
   const chronologicalDates = Array.from(commitDatesSet).sort();
   
   for (const dateString of chronologicalDates) {
-    const currentDate = new Date(dateString + 'T00:00:00');
-    
+    // Parse as noon local time to avoid DST hour-shift causing diff to be 0 or 2
+    const currentDate = new Date(dateString + 'T12:00:00');
+
     if (previousDate) {
-      const daysDiff = Math.floor((currentDate - previousDate) / (1000 * 60 * 60 * 24));
-      
+      const daysDiff = Math.round((currentDate - previousDate) / (1000 * 60 * 60 * 24));
+
       if (daysDiff === 1) {
         tempStreak++;
       } else {
@@ -246,7 +250,7 @@ const calculateStreakFromGitHub = async (username, accessToken) => {
     } else {
       tempStreak = 1;
     }
-    
+
     previousDate = currentDate;
   }
   
