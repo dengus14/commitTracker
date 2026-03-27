@@ -21,9 +21,9 @@ import CommitChart from "./components/CommitChart";
 import { useCommitChart } from "./hooks/useCommitChart";
 import {
   LuHouse, LuCalendar, LuChartBar, LuFlame, LuTrophy,
-  LuLogOut, LuChevronsRight, LuChevronDown,
+  LuLogOut, LuSettings,
   LuGitCommitHorizontal, LuDatabase, LuCalendarDays,
-  LuTrendingUp, LuMoon, LuSun, LuRefreshCw, LuActivity, LuShare2, LuChartColumn,
+  LuMoon, LuSun, LuRefreshCw, LuActivity, LuShare2, LuChartColumn,
 } from 'react-icons/lu';
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -36,159 +36,139 @@ const NAV_ITEMS = [
   { id: 'achievements', Icon: LuTrophy,  label: 'Achievements' },
 ];
 
-const NavItem = ({ Icon, label, isActive, open, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`sidebar-nav-item${isActive ? ' active' : ''}`}
-    title={!open ? label : undefined}
-  >
-    <span className="sidebar-nav-icon"><Icon size={16} /></span>
-    {open && <span className="sidebar-nav-label">{label}</span>}
-  </button>
-);
-
-const AppSidebar = ({ open, setOpen, selected, setSelected, user, logout, theme, toggleTheme }) => (
-  <nav className={`app-sidebar${open ? ' open' : ' closed'}`}>
-    {/* Logo + User */}
-    <div className="sidebar-title-section">
-      <div className="sidebar-title-inner">
-        <div className="sidebar-logo-wrap">
-          <div className="sidebar-logo-icon">
-            <LuGitCommitHorizontal size={18} />
-          </div>
-          {open && user && (
-            <div className="sidebar-user-info">
-              {user.avatarUrl && (
-                <img src={user.avatarUrl} alt={user.username} className="sidebar-avatar" />
-              )}
-              <div>
-                <span className="sidebar-username-text">{user.displayName || user.username}</span>
-                <span className="sidebar-github-text">@{user.username}</span>
-              </div>
-            </div>
-          )}
-        </div>
-        {open && <LuChevronDown size={14} className="sidebar-chevron" />}
+const AppSidebar = ({ selected, setSelected, user, logout, theme, toggleTheme }) => (
+  <nav className="app-sidebar">
+    {/* Logo */}
+    <div className="rail-logo">
+      <div className="rail-logo-icon">
+        <LuGitCommitHorizontal size={18} />
       </div>
     </div>
 
     {/* Primary Nav */}
-    <div className="sidebar-nav">
+    <div className="rail-nav">
       {NAV_ITEMS.map(({ id, Icon, label }) => (
-        <NavItem
+        <button
           key={id}
-          Icon={Icon}
-          label={label}
-          isActive={selected === id}
-          open={open}
+          className={`rail-nav-item${selected === id ? ' active' : ''}`}
+          title={label}
           onClick={() => setSelected(id)}
-        />
+        >
+          <Icon size={18} />
+        </button>
       ))}
     </div>
 
-    {/* Account */}
-    <div className="sidebar-account-section">
-      {open && <div className="sidebar-section-label">Account</div>}
+    {/* Bottom — theme + logout + avatar */}
+    <div className="rail-bottom">
       <button
-        className="sidebar-nav-item"
+        className="rail-nav-item"
         onClick={toggleTheme}
-        title={!open ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+        title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
       >
-        <span className="sidebar-nav-icon">
-          {theme === 'dark' ? <LuSun size={16} /> : <LuMoon size={16} />}
-        </span>
-        {open && <span className="sidebar-nav-label">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+        {theme === 'dark' ? <LuSun size={18} /> : <LuMoon size={18} />}
       </button>
       <button
-        className="sidebar-nav-item sidebar-nav-item-danger"
+        className="rail-nav-item"
         onClick={logout}
-        title={!open ? 'Logout' : undefined}
+        title="Logout"
       >
-        <span className="sidebar-nav-icon"><LuLogOut size={16} /></span>
-        {open && <span className="sidebar-nav-label">Logout</span>}
+        <LuLogOut size={18} />
       </button>
-    </div>
-
-    {/* Toggle */}
-    <button className="sidebar-toggle-btn" onClick={() => setOpen(!open)}>
-      <div className="sidebar-toggle-inner">
-        <LuChevronsRight
-          size={16}
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 300ms ease', flexShrink: 0 }}
+      {user?.avatarUrl && (
+        <img
+          src={user.avatarUrl}
+          alt={user.username}
+          className="rail-avatar"
+          title={user.username}
         />
-        {open && <span className="sidebar-toggle-label">Hide</span>}
-      </div>
-    </button>
+      )}
+    </div>
   </nav>
 );
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 
-const StatCard = ({ icon: Icon, iconClass, label, value, trend }) => (
+const StatCard = ({ icon: Icon, iconClass, label, value }) => (
   <div className="stat-card-21">
-    <div className="stat-card-21-top">
-      <div className={`stat-card-21-icon ${iconClass}`}>
-        <Icon size={18} />
-      </div>
-      {trend && <LuTrendingUp size={14} style={{ color: 'var(--success)', flexShrink: 0 }} />}
+    <div className={`stat-card-21-icon ${iconClass}`}>
+      <Icon size={18} />
     </div>
-    <div className="stat-card-21-label">{label}</div>
-    <div className="stat-card-21-value">{value ?? '—'}</div>
-    {trend && <div className="stat-card-21-trend">{trend}</div>}
+    <div className="stat-card-21-body">
+      <div className="stat-card-21-value">{value ?? '—'}</div>
+      <div className="stat-card-21-label">{label}</div>
+    </div>
   </div>
 );
 
 // ─── Dashboard View ───────────────────────────────────────────────────────────
 
-const DashboardView = ({ commitStats, loading, streakData, checkCommits, user, chartDays, chartLoading }) => {
-  const getMessage = () => {
-    if (loading) return null;
-    if (commitStats?.todayCount > 0)
-      return `${commitStats.todayCount} commit${commitStats.todayCount !== 1 ? 's' : ''} today — keep it going!`;
-    if (commitStats) return "Looks like someone is taking a break, huh?";
-    return null;
-  };
+const getMotivation = (streak) => {
+  if (!streak || streak === 0) return ['Start your streak today.', ''];
+  if (streak < 3)  return ["You're just getting started.", "Keep showing up."];
+  if (streak < 7)  return ["You're building momentum.", "Don't break the chain."];
+  if (streak < 14) return ["You're on fire this week.", "Don't break the chain."];
+  return ["You're unstoppable.", "Don't break the chain."];
+};
 
-  const msg = getMessage();
+const DashboardView = ({ commitStats, loading, streakData, checkCommits, user, chartDays, chartLoading }) => {
+  const totalCommits = chartDays?.reduce((s, d) => s + d.count, 0) ?? 0;
+  const activeDays   = chartDays?.filter(d => d.count > 0).length ?? 0;
+  const [line1, line2] = getMotivation(streakData?.currentStreak);
 
   return (
     <div className="dashboard-page">
-      {msg && <p className="dashboard-custom-message">{msg}</p>}
+      {/* Streak Hero */}
+      {!loading && streakData && (
+        <div className="streak-hero fadeup">
+          <div className="streak-hero-glow" />
+          <div className="streak-hero-left">
+            <div className="streak-hero-number">{streakData.currentStreak ?? 0}</div>
+            <div className="streak-hero-label">Day Streak</div>
+          </div>
+          <div className="streak-hero-right">
+            <p className="streak-hero-headline">
+              <span className="streak-hero-hl">{line1}</span>
+              {line2 && <><br />{line2}</>}
+            </p>
+            <div className="streak-hero-meta">
+              <div className="streak-hero-stat">
+                <span className="streak-hero-stat-label">Longest</span>
+                <span className="streak-hero-stat-value">{streakData.longestStreak ?? 0}</span>
+              </div>
+              <div className="streak-hero-stat">
+                <span className="streak-hero-stat-label">This Month</span>
+                <span className="streak-hero-stat-value">{totalCommits}</span>
+              </div>
+              <div className="streak-hero-stat">
+                <span className="streak-hero-stat-label">Active Days</span>
+                <span className="streak-hero-stat-value">{activeDays}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Stats Grid */}
+      {/* Stat Pills */}
       {commitStats && !loading && (
-        <div className="stats-grid-21">
+        <div className="stats-grid-21 fadeup fadeup-1">
           <StatCard
             icon={LuGitCommitHorizontal}
-            iconClass="icon-blue"
-            label="Commits Today"
+            iconClass="icon-lime"
+            label="commits today"
             value={commitStats.todayCount}
-            trend={commitStats.todayCount > 0 ? 'Active today' : null}
           />
           <StatCard
             icon={LuDatabase}
-            iconClass="icon-green"
-            label="Active Repos"
+            iconClass="icon-coral"
+            label="active repos"
             value={commitStats.todayRepos}
-            trend={commitStats.todayRepos > 1 ? 'Multiple repos' : null}
           />
           <StatCard
             icon={LuCalendarDays}
-            iconClass="icon-purple"
-            label="This Week"
+            iconClass="icon-blue"
+            label="this week"
             value={commitStats.thisWeekCount}
-            trend={null}
-          />
-          <StatCard
-            icon={LuFlame}
-            iconClass="icon-orange"
-            label="Current Streak"
-            value={streakData?.currentStreak ?? '—'}
-            trend={
-              streakData?.currentStreak > 0
-                ? `${streakData.currentStreak} day${streakData.currentStreak !== 1 ? 's' : ''}`
-                : null
-            }
           />
         </div>
       )}
@@ -202,63 +182,32 @@ const DashboardView = ({ commitStats, loading, streakData, checkCommits, user, c
 
       {/* Content Grid */}
       {commitStats && !loading && (
-        <div className="content-grid-21">
+        <div className="content-grid-21 fadeup fadeup-2">
 
-          {/* Activity Feed — compact left column */}
-          <div className="panel-card activity-feed-panel">
-            <div className="panel-card-header">
-              <span className="panel-card-title">
-                <LuActivity size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
-                Recent Activity
-              </span>
-              <button
-                className="panel-card-action"
-                onClick={() => checkCommits(user?.username)}
-                disabled={loading}
-              >
-                <LuRefreshCw size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
-                Refresh
-              </button>
-            </div>
-            <ActivityFeed events={commitStats.events} compact />
-          </div>
-
-          {/* Commit Chart — dominant right column */}
+          {/* Commit Chart — 5fr left */}
           <div className="panel-card commit-chart-panel">
             <div className="panel-card-header">
-              <span className="panel-card-title">
-                <LuChartColumn size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
-                Last 30 Days
-              </span>
-              {commitStats.lastCommit && (
-                <span className="badge-today" style={{ opacity: 0.7, fontSize: 10 }}>
-                  {commitStats.lastCommit.isToday ? 'Active today' : `Last: ${commitStats.lastCommit.time}`}
-                </span>
+              <span className="panel-card-title">LAST 30 DAYS</span>
+              {totalCommits > 0 && (
+                <span className="badge-today">{totalCommits} commits</span>
               )}
             </div>
             <CommitChart days={chartDays} loading={chartLoading} />
-
-            {/* Streak row inside chart panel */}
-            {streakData && (
-              <div className="streak-inline-row">
-                <div className="streak-inline-item">
-                  <LuFlame size={13} style={{ color: 'var(--warning)', flexShrink: 0 }} />
-                  <span className="streak-inline-value">{streakData.currentStreak}</span>
-                  <span className="streak-inline-label">day streak</span>
-                </div>
-                <div className="streak-inline-sep" />
-                <div className="streak-inline-item">
-                  <span className="streak-inline-value">{streakData.longestStreak}</span>
-                  <span className="streak-inline-label">longest</span>
-                </div>
-                {streakData.currentStreak > 0 && streakData.currentStreak === streakData.longestStreak && (
-                  <>
-                    <div className="streak-inline-sep" />
-                    <span className="streak-inline-best">Personal best!</span>
-                  </>
-                )}
+            {commitStats.lastCommit && (
+              <div className="chart-panel-footer">
+                <span><strong>{activeDays}</strong> active days</span>
+                <span className="chart-footer-dot" />
+                <span>Last commit <strong>{commitStats.lastCommit.time}</strong></span>
               </div>
             )}
+          </div>
+
+          {/* Activity Feed — 3fr right */}
+          <div className="panel-card activity-feed-panel">
+            <div className="panel-card-header">
+              <span className="panel-card-title">ACTIVITY</span>
+            </div>
+            <ActivityFeed events={commitStats.events} />
           </div>
 
         </div>
@@ -275,7 +224,6 @@ function App() {
   const { loading, status, commitStats, checkCommits } = useCommitData();
   const { streakData, calculateStreak } = useStreakData();
   const { days: chartDays, loading: chartLoading } = useCommitChart();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [navSelected, setNavSelected] = useState('dashboard');
 
   useEffect(() => {
@@ -312,8 +260,6 @@ function App() {
       <AchievementProvider>
         <div className="app-shell">
           <AppSidebar
-            open={sidebarOpen}
-            setOpen={setSidebarOpen}
             selected={navSelected}
             setSelected={setNavSelected}
             user={user}
@@ -325,25 +271,22 @@ function App() {
           <div className="app-main">
             {/* Header */}
             <div className="app-header-bar">
-              <div>
-                <h1 className="app-page-title">{meta.title}</h1>
-                <p className="app-page-subtitle">{meta.subtitle}</p>
-              </div>
+              <p className="app-header-greeting">
+                Welcome back, <strong>{user?.displayName || user?.username}</strong>
+              </p>
               <div className="app-header-actions">
-                <a
-                  href={`/u/${user.username}`}
-                  className="share-profile-btn"
-                  aria-label="View public profile"
+                <span className="date-chip">
+                  <LuCalendar size={12} />
+                  {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                <button
+                  className="header-icon-btn"
+                  onClick={() => { checkCommits(user?.username); calculateStreak(user?.username); }}
+                  aria-label="Refresh"
+                  title="Refresh"
                 >
-                  <LuShare2 size={13} />
-                  <span>Share Profile</span>
-                </a>
-                <button className="header-icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
-                  {theme === 'dark' ? <LuSun size={16} /> : <LuMoon size={16} />}
+                  <LuRefreshCw size={15} />
                 </button>
-                {user.avatarUrl && (
-                  <img src={user.avatarUrl} alt={user.username} className="header-avatar" title={user.username} />
-                )}
               </div>
             </div>
 

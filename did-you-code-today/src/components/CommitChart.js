@@ -25,21 +25,8 @@ const CommitChart = ({ days = [], loading }) => {
 
   if (days.length === 0) return null;
 
-  const totalCommits = days.reduce((s, d) => s + d.count, 0);
-  const activeDays = days.filter(d => d.count > 0).length;
-
   return (
     <div className="commit-chart-wrap">
-      <div className="commit-chart-meta">
-        <span className="commit-chart-meta-item">
-          <strong>{totalCommits}</strong> commits
-        </span>
-        <span className="commit-chart-meta-dot" />
-        <span className="commit-chart-meta-item">
-          <strong>{activeDays}</strong> active days
-        </span>
-      </div>
-
       <div className="commit-chart-bars">
         {days.map((day, i) => {
           const heightPct = day.count === 0 ? 0 : Math.max(8, (day.count / maxCount) * 100);
@@ -54,7 +41,6 @@ const CommitChart = ({ days = [], loading }) => {
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
             >
-              {/* Tooltip on hover */}
               {isHovered && (
                 <div className={`commit-chart-tooltip ${i > 22 ? 'left' : ''}`}>
                   <div className="commit-chart-tooltip-date">{day.shortDate}</div>
@@ -64,7 +50,6 @@ const CommitChart = ({ days = [], loading }) => {
                 </div>
               )}
 
-              {/* Day label above the bar — only when there are commits */}
               {hasCommits && (
                 <div className={`commit-chart-top-label ${day.isToday ? 'today' : ''}`}>
                   {day.isToday ? 'Today' : day.dayName}
@@ -77,6 +62,20 @@ const CommitChart = ({ days = [], loading }) => {
                   style={{ '--bar-height': `${heightPct}%`, animationDelay: `${i * 20}ms` }}
                 />
               </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* X-axis labels — every 5th day */}
+      <div className="commit-chart-xaxis">
+        {days.map((day, i) => {
+          const date = new Date(day.dateKey + 'T12:00:00');
+          const dayNum = date.getDate();
+          const show = i === 0 || dayNum % 5 === 0;
+          return (
+            <div key={day.dateKey} className="commit-chart-xaxis-cell">
+              {show && <span className="commit-chart-xaxis-label">{dayNum}</span>}
             </div>
           );
         })}
