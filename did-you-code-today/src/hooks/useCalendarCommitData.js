@@ -4,14 +4,14 @@ import { createFetchGitHub } from '../utils/githubApi';
 
 export const useCalendarCommitData = () => {
   const { user, token } = useAuth();
-  const [commitCounts, setCommitCounts] = useState(new Map());
+  // Map<dateString, { count: number, repos: string[] }>
+  const [commitData, setCommitData] = useState(new Map());
   const [loading, setLoading] = useState(false);
 
   const fetchCommitDatesForMonth = useCallback(async (year, month) => {
     if (!user || !user.username) return;
 
     const fetchGitHub = createFetchGitHub(user, token);
-
     setLoading(true);
 
     try {
@@ -28,7 +28,8 @@ export const useCalendarCommitData = () => {
       }
 
       const repos = await reposResponse.json();
-      const counts = new Map();
+      // Map<dateString, { count, repos: Set<string> }>
+      const data = new Map();
 
       for (const repo of repos.slice(0, 5)) {
         try {
@@ -42,7 +43,10 @@ export const useCalendarCommitData = () => {
             commits.forEach(commit => {
               const d = new Date(commit.commit.author.date);
               const key = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toDateString();
-              counts.set(key, (counts.get(key) || 0) + 1);
+              const existing = data.get(key) || { count: 0, repos: new Set() };
+              existing.count += 1;
+              existing.repos.add(repo.name);
+              data.set(key, existing);
             });
           }
         } catch (repoError) {
@@ -50,7 +54,13 @@ export const useCalendarCommitData = () => {
         }
       }
 
-      setCommitCounts(counts);
+      // Convert Sets to arrays for easier consumption
+      const serialized = new Map();
+      data.forEach((val, key) => {
+        serialized.set(key, { count: val.count, repos: Array.from(val.repos) });
+      });
+
+      setCommitData(serialized);
     } catch (error) {
       console.error('Error fetching commit dates:', error);
     } finally {
@@ -59,13 +69,17 @@ export const useCalendarCommitData = () => {
   }, [user, token]);
 
   const getCommitCount = useCallback((date) => {
-    return commitCounts.get(date.toDateString()) || 0;
-  }, [commitCounts]);
+    return commitData.get(date.toDateString())?.count || 0;
+  }, [commitData]);
+
+  const getCommitDetails = useCallback((date) => {
+    return commitData.get(date.toDateString()) || { count: 0, repos: [] };
+  }, [commitData]);
 
   return {
-    commitCounts,
     loading,
     fetchCommitDatesForMonth,
     getCommitCount,
+    getCommitDetails,
   };
 };

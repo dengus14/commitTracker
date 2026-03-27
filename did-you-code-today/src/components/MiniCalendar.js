@@ -1,37 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCalendarCommitData } from '../hooks/useCalendarCommitData';
-import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
+import { LuChevronLeft, LuChevronRight, LuGitCommitHorizontal, LuX } from 'react-icons/lu';
+
+const DAY_NAMES_SHORT = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTH_NAMES = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
 
 const MiniCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { getCommitCount, fetchCommitDatesForMonth, loading } = useCalendarCommitData();
+  const [flippedDay, setFlippedDay] = useState(null);
+  const { getCommitCount, getCommitDetails, fetchCommitDatesForMonth, loading } = useCalendarCommitData();
 
   const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-  const today = new Date();
+  const currentYear  = currentDate.getFullYear();
+  const today        = new Date();
 
   useEffect(() => {
     fetchCommitDatesForMonth(currentYear, currentMonth);
+    setFlippedDay(null);
   }, [currentYear, currentMonth, fetchCommitDatesForMonth]);
 
-  const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-  const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+  const firstDayOfMonth   = new Date(currentYear, currentMonth, 1);
   const startingDayOfWeek = firstDayOfMonth.getDay();
-  const daysInMonth = lastDayOfMonth.getDate();
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysInMonth       = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   const calendarDays = [];
   for (let i = 0; i < startingDayOfWeek; i++) calendarDays.push(null);
-  for (let day = 1; day <= daysInMonth; day++) calendarDays.push(day);
+  for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
 
-  const goToPreviousMonth = () => setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
-  const goToNextMonth = () => setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+  const goToPrev  = () => setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+  const goToNext  = () => setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+  const goToToday = () => setCurrentDate(new Date());
 
   const isToday = (day) =>
     day &&
@@ -39,71 +40,125 @@ const MiniCalendar = () => {
     currentMonth === today.getMonth() &&
     currentYear === today.getFullYear();
 
-  const getIntensityClass = (day) => {
-    if (!day) return '';
-    const count = getCommitCount(new Date(currentYear, currentMonth, day));
+  const getIntensityClass = (count) => {
     if (count === 0) return '';
-    if (count <= 2) return 'commits-level-1';
-    if (count <= 5) return 'commits-level-2';
+    if (count <= 2)  return 'commits-level-1';
+    if (count <= 5)  return 'commits-level-2';
     return 'commits-level-3';
   };
 
-  const getTooltip = (day) => {
-    if (!day) return undefined;
-    const count = getCommitCount(new Date(currentYear, currentMonth, day));
-    if (count === 0) return undefined;
-    const monthName = monthNames[currentMonth];
-    return `${count} commit${count !== 1 ? 's' : ''} on ${monthName} ${day}`;
-  };
+  const handleCellClick = useCallback((day) => {
+    if (!day) return;
+    setFlippedDay(prev => prev === day ? null : day);
+  }, []);
 
   return (
-    <div className="mini-calendar">
+    <div className="mini-calendar" onClick={(e) => {
+      if (e.target.closest('.calendar-cell')) return;
+      setFlippedDay(null);
+    }}>
+
+      {/* ── Header ── */}
       <div className="calendar-header">
-        <button
-          className="calendar-nav-btn"
-          onClick={goToPreviousMonth}
-          aria-label="Previous month"
-          disabled={loading}
-        >
-          <LuChevronLeft size={14} />
+        <button className="calendar-nav-btn" onClick={goToPrev} aria-label="Previous month" disabled={loading}>
+          <LuChevronLeft size={12} />
         </button>
-        <h3 className="calendar-title">
-          {monthNames[currentMonth]} {currentYear}
-        </h3>
-        <button
-          className="calendar-nav-btn"
-          onClick={goToNextMonth}
-          aria-label="Next month"
-          disabled={loading}
-        >
-          <LuChevronRight size={14} />
+        <button className="calendar-title-btn" onClick={goToToday} title="Jump to today">
+          {MONTH_NAMES[currentMonth]} {currentYear}
+        </button>
+        <button className="calendar-nav-btn" onClick={goToNext} aria-label="Next month" disabled={loading}>
+          <LuChevronRight size={12} />
         </button>
       </div>
 
+      {/* ── Weekday labels ── */}
       <div className="calendar-weekdays">
-        {dayNames.map(day => (
-          <div key={day} className="calendar-weekday">{day}</div>
+        {DAY_NAMES_SHORT.map(d => (
+          <div key={d} className="calendar-weekday">{d}</div>
         ))}
       </div>
 
-      <div className="calendar-days">
-        {calendarDays.map((day, index) => {
-          const intensityClass = getIntensityClass(day);
-          const tooltip = getTooltip(day);
+      {/* ── Day grid ── */}
+      <div className="calendar-grid">
+        {calendarDays.map((day, idx) => {
+          if (!day) return <div key={idx} className="calendar-cell empty-cell" />;
+
+          const date    = new Date(currentYear, currentMonth, day);
+          const count   = getCommitCount(date);
+          const details = getCommitDetails(date);
+          const isFlipped = flippedDay === day;
+          const todayCell = isToday(day);
+          const intensity = getIntensityClass(count);
+
+          const dateLabel = `${MONTH_NAMES[currentMonth].slice(0,3)} ${day}`;
+
           return (
             <div
-              key={index}
-              className={`calendar-day ${day ? 'has-day' : 'empty-day'} ${isToday(day) ? 'today' : ''} ${intensityClass}`}
-              title={tooltip}
+              key={idx}
+              className={`calendar-cell has-day ${todayCell ? 'today' : ''} ${intensity} ${isFlipped ? 'flipped' : ''}`}
+              onClick={() => handleCellClick(day)}
+              role="button"
+              tabIndex={0}
+              aria-label={`${dateLabel}: ${count} commit${count !== 1 ? 's' : ''}`}
+              onKeyDown={(e) => e.key === 'Enter' && handleCellClick(day)}
             >
-              {day && <span className="day-number">{day}</span>}
+              <div className="cell-inner">
+
+                {/* ── Front face ── */}
+                <div className="cell-face cell-front">
+                  <span className="cell-day">{day}</span>
+                  {count > 0 ? (
+                    <span className="cell-count">{count}</span>
+                  ) : (
+                    <span className="cell-empty-dot" />
+                  )}
+                </div>
+
+                {/* ── Back face ── */}
+                <div className="cell-face cell-back">
+                  <div className="back-header">
+                    <span className="back-date">{day}</span>
+                    <LuX size={8} className="back-close-hint" />
+                  </div>
+                  {count > 0 ? (
+                    <>
+                      <div className="back-commits">
+                        <LuGitCommitHorizontal size={8} />
+                        <span>{count}</span>
+                      </div>
+                      <div className="back-repos">
+                        {details.repos.slice(0, 3).map(repo => (
+                          <span key={repo} className="back-repo-tag">{repo}</span>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="back-empty">—</span>
+                  )}
+                </div>
+
+              </div>
             </div>
           );
         })}
       </div>
 
+      {/* ── Legend ── */}
+      <div className="calendar-legend">
+        <span className="legend-label">Less</span>
+        <span className="legend-swatch level-0" />
+        <span className="legend-swatch level-1" />
+        <span className="legend-swatch level-2" />
+        <span className="legend-swatch level-3" />
+        <span className="legend-label">More</span>
+      </div>
+
       {loading && (
-        <div className="calendar-loading">Loading commits...</div>
+        <div className="calendar-loading">
+          <span className="loading-dot" />
+          <span className="loading-dot" />
+          <span className="loading-dot" />
+        </div>
       )}
     </div>
   );
